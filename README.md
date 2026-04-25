@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # CUA-Lark
 
 Computer-Use Agent for Lark/Feishu 桌面端 — 基于视觉多模态大模型，像真实用户一样操作飞书桌面客户端，实现跨产品自动化功能测试。
