@@ -1,0 +1,22 @@
+[
+  {
+    "instruction": "点击飞书左侧导航栏的消息图标",
+    "expected_action": "click"
+  },
+  {
+    "instruction": "点击飞书左侧导航栏的日历图标",
+    "expected_action": "click"
+  },
+  {
+    "instruction": "在飞书的搜索框中输入 测试群",
+    "expected_action": "type"
+  },
+  {
+    "instruction": "使用快捷键 Ctrl+N 创建新消息",
+    "expected_action": "hotkey"
+  },
+  {
+    "instruction": "在飞书的消息列表中向下滚动",
+    "expected_action": "scroll"
+  }
+]
