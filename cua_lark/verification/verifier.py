@@ -17,11 +17,7 @@ class Verdict:
 def verify(
     before: Image.Image, after: Image.Image, expected: str
 ) -> Verdict:
-    """Compare before/after screenshots to check if action succeeded.
-
-    Uses VLM for semantic comparison (pixel diff is unreliable for GUI state
-    changes where minor animations or timestamps differ).
-    """
+    """Compare before/after screenshots to check if action succeeded."""
     result = vlm_verify(before, after, expected)
     return Verdict(
         passed=result.passed,
