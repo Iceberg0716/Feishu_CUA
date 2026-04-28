@@ -49,8 +49,9 @@ SYSTEM_PROMPT = """你是一个GUI自动化操作助手。根据屏幕截图和�
 规则：
 1. 坐标(0,0)是屏幕左上角，输出目标元素中心点
 2. 必须逐一列出侧边栏图标，只列你确实看到的
-3. 找不到目标元素时confidence=0
-4. 绝对不要用markdown代码块，直接输出纯JSON"""
+3. type动作如果要输入到特定输入框，必须带上x,y指定该输入框的位置（系统会先点击再输入）
+4. 找不到目标元素时confidence=0
+5. 绝对不要用markdown代码块，直接输出纯JSON"""
 
 VERIFY_PROMPT = """你是一个GUI测试验证助手。对比操作前后的两张截图，判断操作是否达到了预期效果。
 
@@ -202,6 +203,104 @@ def verify_result(
                 continue
             raise RuntimeError(f"VLM verify response was not valid JSON: {raw}")
         except Exception as e:
+            if attempt < config.max_retries - 1:
+                time.sleep(1 * (attempt + 1))
+                continue
+            raise
+
+
+PLAN_PROMPT = """你是一个任务规划助手。根据屏幕截图和用户指令，将指令拆解为有序的操作步骤。每个步骤必须是一个独立的单步操作（点击某个元素、输入文字、按快捷键等）。
+
+输出JSON数组，每个元素包含：
+{
+  "description": "这一步骤的操作指令（自然语言，可以独立执行）",
+  "expected": "执行后预期看到的变化"
+}
+
+规则：
+1. 如果指令是"在XX输入YY"，必须拆成两步：[点击输入框, 输入YY]
+2. 步骤之间的先后顺序要合理，前一步的预期结果应为后一步创造前提
+3. 不要包含等待操作，系统会自动等待
+4. 只输出JSON数组，不要markdown"""
+
+HEAL_PROMPT = """你是一个GUI调试助手。上一个操作失败了，你需要分析当前截图，找出失败原因，并生成一个新的替代操作。
+
+输出格式（严格JSON）：
+{
+  "reason": "为什么原操作失败",
+  "alternative": "新的操作指令（自然语言，可以独立执行）"
+}
+
+只输出JSON，不要markdown。"""
+
+
+def call_vlm_for_plan(image: Image.Image, instruction: str) -> str:
+    """Break instruction into step sequence. Returns raw JSON array string."""
+    client = _build_client()
+    image_b64 = _encode_image(image)
+
+    user_msg = f"请将以下指令拆解为操作步骤：\n{instruction}"
+
+    for attempt in range(config.max_retries):
+        try:
+            response = client.chat.completions.create(
+                model=config.model_name,
+                messages=[
+                    {"role": "system", "content": [{"type": "text", "text": PLAN_PROMPT}]},
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{image_b64}"}},
+                            {"type": "text", "text": user_msg},
+                        ],
+                    },
+                ],
+            )
+            raw = response.choices[0].message.content
+            return _extract_json(raw)
+        except Exception:
+            if attempt < config.max_retries - 1:
+                time.sleep(1 * (attempt + 1))
+                continue
+            raise
+
+
+def call_vlm_for_heal(
+    image: Image.Image, original_step: str, fail_reason: str
+) -> tuple[str, str]:
+    """Analyze failure and suggest alternative. Returns (reason, alternative_instruction)."""
+    client = _build_client()
+    image_b64 = _encode_image(image)
+
+    user_msg = f"""原始操作：{original_step}
+验证失败原因：{fail_reason}
+
+请分析当前截图，判断失败原因并给出替代操作。"""
+
+    for attempt in range(config.max_retries):
+        try:
+            response = client.chat.completions.create(
+                model=config.model_name,
+                messages=[
+                    {"role": "system", "content": [{"type": "text", "text": HEAL_PROMPT}]},
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{image_b64}"}},
+                            {"type": "text", "text": user_msg},
+                        ],
+                    },
+                ],
+            )
+            raw = response.choices[0].message.content
+            parsed = json.loads(_extract_json(raw))
+            return parsed.get("reason", ""), parsed.get("alternative", "")
+        except (json.JSONDecodeError, KeyError):
+            if attempt < config.max_retries - 1:
+                time.sleep(1 * (attempt + 1))
+                continue
+            raise
+        except Exception:
             if attempt < config.max_retries - 1:
                 time.sleep(1 * (attempt + 1))
                 continue

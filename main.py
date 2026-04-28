@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CUA-Lark CLI: run single steps, test suites, or interactive sessions."""
+"""CUA-Lark CLI: run single steps, multi-step tasks, test suites, or interactive sessions."""
 
 import argparse
 import json
@@ -9,22 +9,39 @@ from pathlib import Path
 from cua_lark.orchestrator import Orchestrator
 
 
-def fmt_result(r):
+def fmt_step(r):
     status = "PASS" if r.verdict_passed else "FAIL"
+    heal = f" (healed x{r.heal_attempts})" if r.heal_attempts else ""
     return (
-        f"[{status}] {r.instruction[:60]}\n"
-        f"  Action: {type(r.action).__name__ if r.action else 'N/A'}\n"
-        f"  Reason: {r.verdict_reason}\n"
-        f"  Time:   {r.elapsed_ms:.0f}ms\n"
-        f"  Before: {r.before_path}\n"
-        f"  After:  {r.after_path}"
+        f"  [{status}] {r.instruction[:60]}{heal}\n"
+        f"    Action: {type(r.action).__name__ if r.action else 'N/A'}\n"
+        f"    Reason: {r.verdict_reason}\n"
+        f"    Time:   {r.elapsed_ms:.0f}ms"
     )
+
+
+def fmt_task(task):
+    status = "PASS" if task.passed else "FAIL"
+    lines = [
+        f"[{status}] {task.instruction}",
+        f"  Steps: {task.passed_steps}/{task.total_steps} passed",
+        f"  Total:  {task.total_elapsed_ms:.0f}ms",
+    ]
+    for s in task.steps:
+        lines.append(fmt_step(s))
+    return "\n".join(lines)
 
 
 def run_single(instruction: str):
     orch = Orchestrator()
     result = orch.run_step(instruction)
-    print(fmt_result(result))
+    print(fmt_step(result))
+
+
+def run_task(instruction: str):
+    orch = Orchestrator()
+    result = orch.run_task(instruction)
+    print(fmt_task(result))
 
 
 def run_test_suite(suite_path: str):
@@ -42,13 +59,12 @@ def run_test_suite(suite_path: str):
 
     for i, tc in enumerate(test_cases):
         instruction = tc.get("instruction", "")
-        expected_action = tc.get("expected_action", "")
 
         print(f"\n--- Test {i + 1}/{len(test_cases)}: {instruction[:80]} ---")
-        result = orch.run_step(instruction)
-        print(fmt_result(result))
+        result = orch.run_task(instruction)
+        print(fmt_task(result))
 
-        if result.verdict_passed:
+        if result.passed:
             passed += 1
         else:
             failed += 1
@@ -57,7 +73,7 @@ def run_test_suite(suite_path: str):
 
 
 def run_interactive():
-    print("CUA-Lark Interactive Mode")
+    print("CUA-Lark Interactive Mode (multi-step + self-healing)")
     print("Type your instruction and press Enter. Type 'quit' to exit.\n")
 
     orch = Orchestrator()
@@ -74,8 +90,8 @@ def run_interactive():
             print("Goodbye.")
             break
 
-        result = orch.run_step(instruction)
-        print(fmt_result(result))
+        result = orch.run_task(instruction)
+        print(fmt_task(result))
         print()
 
 
@@ -85,13 +101,20 @@ def main():
     )
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
-        "-i", "--instruction", type=str, help="Single instruction to execute"
+        "-i", "--instruction", type=str,
+        help="Single-step instruction (no planning, no self-healing)"
     )
     group.add_argument(
-        "-t", "--test-suite", type=str, help="Path to JSON test suite file"
+        "--task", type=str,
+        help="Multi-step task with auto-planning + self-healing"
     )
     group.add_argument(
-        "--interactive", action="store_true", help="Interactive mode"
+        "-t", "--test-suite", type=str,
+        help="Path to JSON test suite file (uses multi-step mode)"
+    )
+    group.add_argument(
+        "--interactive", action="store_true",
+        help="Interactive mode (multi-step + self-healing)"
     )
 
     args = parser.parse_args()
@@ -100,6 +123,8 @@ def main():
         run_test_suite(args.test_suite)
     elif args.interactive:
         run_interactive()
+    elif args.task:
+        run_task(args.task)
     elif args.instruction:
         run_single(args.instruction)
     else:
