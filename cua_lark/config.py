@@ -7,7 +7,10 @@ from dataclasses import dataclass, field
 @dataclass
 class Config:
     dashscope_api_key: str = field(
-        default_factory=lambda: os.environ.get("DASHSCOPE_API_KEY", "")
+        default_factory=lambda: os.environ.get(
+            "DASHSCOPE_API_KEY",
+            "sk-600f2af2fc024f2bbfd7392a7cc16368",
+        )
     )
     model_name: str = field(
         default_factory=lambda: os.environ.get("CUA_MODEL", "qwen-vl-max")
