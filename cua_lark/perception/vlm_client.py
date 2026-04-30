@@ -94,6 +94,15 @@ class VlmVerifyResponse:
     raw_response: str
 
 
+@dataclass
+class VlmStateResponse:
+    app_in_view: bool
+    state: str
+    reason: str
+    confidence: float
+    raw_response: str
+
+
 def analyze_screen(image: Image.Image, instruction: str) -> VlmActionResponse:
     """Send screenshot + instruction to VLM, return structured action."""
     client = _build_client()
@@ -202,6 +211,64 @@ def verify_result(
                 continue
             raise RuntimeError(f"VLM verify response was not valid JSON: {raw}")
         except Exception as e:
+            if attempt < config.max_retries - 1:
+                time.sleep(1 * (attempt + 1))
+                continue
+            raise
+
+
+def classify_page_state(image: Image.Image, known_states: list[str]) -> VlmStateResponse:
+    """Classify whether the target app is visible and which known page state is active."""
+    client = _build_client()
+    image_b64 = _encode_image(image)
+    state_prompt = (
+        "你是桌面自动化状态识别助手。"
+        "请判断截图中是否正在显示目标应用飞书/Lark，并在给定候选状态中选择当前最接近的页面状态。"
+        f"候选状态: {', '.join(known_states)}。"
+        '输出严格 JSON: {"app_in_view": true/false, "state": "...", "reason": "...", "confidence": 0.0}'
+    )
+
+    for attempt in range(config.max_retries):
+        try:
+            response = client.chat.completions.create(
+                model=config.model_name,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": [{"type": "text", "text": state_prompt}],
+                    },
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/png;base64,{image_b64}"
+                                },
+                            },
+                            {
+                                "type": "text",
+                                "text": "请只根据截图可见内容判断当前页面状态。",
+                            },
+                        ],
+                    },
+                ],
+            )
+            raw = response.choices[0].message.content
+            parsed = json.loads(_extract_json(raw))
+            return VlmStateResponse(
+                app_in_view=bool(parsed.get("app_in_view", False)),
+                state=parsed.get("state", "unknown"),
+                reason=parsed.get("reason", ""),
+                confidence=parsed.get("confidence", 0.0),
+                raw_response=raw,
+            )
+        except json.JSONDecodeError:
+            if attempt < config.max_retries - 1:
+                time.sleep(1 * (attempt + 1))
+                continue
+            raise RuntimeError(f"VLM state response was not valid JSON: {raw}")
+        except Exception:
             if attempt < config.max_retries - 1:
                 time.sleep(1 * (attempt + 1))
                 continue

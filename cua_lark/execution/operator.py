@@ -4,6 +4,7 @@ import random
 import time
 import pyautogui
 
+from ..config import config
 from .action_types import (
     ClickAction,
     DoubleClickAction,
@@ -21,27 +22,27 @@ def _human_delay(min_s: float = 0.3, max_s: float = 0.8):
 
 
 def execute_click(action: ClickAction):
-    _human_delay()
+    _human_delay(config.action_delay_min, config.action_delay_max)
     pyautogui.click(x=action.x, y=action.y, button=action.button)
 
 
 def execute_double_click(action: DoubleClickAction):
-    _human_delay()
+    _human_delay(config.action_delay_min, config.action_delay_max)
     pyautogui.doubleClick(x=action.x, y=action.y)
 
 
 def execute_type(action: TypeAction):
-    _human_delay()
+    _human_delay(config.action_delay_min, config.action_delay_max)
     pyautogui.typewrite(action.text, interval=random.uniform(0.02, 0.06))
 
 
 def execute_hotkey(action: HotkeyAction):
-    _human_delay()
+    _human_delay(config.action_delay_min, config.action_delay_max)
     pyautogui.hotkey(*action.keys)
 
 
 def execute_scroll(action: ScrollAction):
-    _human_delay()
+    _human_delay(config.action_delay_min, config.action_delay_max)
     pyautogui.scroll(action.dy)
 
 
