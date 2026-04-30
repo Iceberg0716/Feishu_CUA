@@ -3,14 +3,15 @@
 import os
 from dataclasses import dataclass, field
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 @dataclass
 class Config:
     dashscope_api_key: str = field(
-        default_factory=lambda: os.environ.get(
-            "DASHSCOPE_API_KEY",
-            "sk-217aead60a6a414e95721a145195d6af",
-        )
+        default_factory=lambda: os.environ.get("DASHSCOPE_API_KEY", "")
     )
     model_name: str = field(
         default_factory=lambda: os.environ.get("CUA_MODEL", "qwen-vl-max")

@@ -1,0 +1,16 @@
+[project]
+name = "cua-lark"
+version = "0.1.0"
+description = "Computer-Use Agent for Lark/Feishu 桌面端"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "mss>=9.0.0",
+    "Pillow>=10.0.0",
+    "pyautogui>=0.9.54",
+    "openai>=1.0.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.scripts]
+cua-lark = "main:main"

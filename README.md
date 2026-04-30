@@ -9,30 +9,25 @@ Computer-Use Agent for Lark/Feishu 桌面端 — 基于视觉多模态大模型�
 ### 1. 安装依赖
 
 ```bash
-pip install -r requirements.txt
+# 安装 uv（如果尚未安装）
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# 安装项目依赖
+uv sync
 ```
 
 ### 2. 配置 API Key
 
-打开 `cua_lark/config.py`，找到 `dashscope_api_key` 字段，把 key 换成你自己的：
+复制 `.env.example` 为 `.env`，填入你的 DashScope API Key：
 
-```python
-# cua_lark/config.py 第 9-14 行
-dashscope_api_key: str = field(
-    default_factory=lambda: os.environ.get(
-        "DASHSCOPE_API_KEY",
-        "sk-你的key填在这里",  # ← 改这里
-    )
-)
+```bash
+cp .env.example .env
 ```
 
-或者设置环境变量（优先级更高）：
-```powershell
-# Windows PowerShell
-$env:DASHSCOPE_API_KEY = "sk-你的key"
+编辑 `.env`：
 
-# macOS / Linux
-export DASHSCOPE_API_KEY=sk-你的key
+```dotenv
+DASHSCOPE_API_KEY=sk-你的实际key
 ```
 
 ### 3. 切换 VLM 模型
@@ -50,13 +45,13 @@ base_url: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"  # 改 API �
 
 ```bash
 # 单步执行
-python main.py -i "点击飞书左侧导航栏的消息图标"
+uv run python main.py -i "点击飞书左侧导航栏的消息图标"
 
 # 批量跑测试套件
-python main.py -t tests/m1_single_actions.json
+uv run python main.py -t tests/m1_single_actions.json
 
 # 交互模式（逐条输入指令）
-python main.py --interactive
+uv run python main.py --interactive
 ```
 
 ## 整体架构
@@ -90,7 +85,7 @@ python main.py --interactive
 ```
 CUA/
 ├── main.py                         # CLI 入口
-├── requirements.txt                # Python 依赖
+├── pyproject.toml                  # 项目配置 & 依赖（uv）
 ├── test_api.py                     # API 连通性测试
 ├── tests/
 │   └── m1_single_actions.json      # M1 测试用例
