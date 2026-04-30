@@ -1,0 +1,33 @@
+{
+  "app_names": [
+    "Feishu",
+    "Lark",
+    "飞书"
+  ],
+  "launch_commands": [
+    "C:\\Program Files\\Feishu\\Feishu.exe",
+    "C:\\Program Files (x86)\\Feishu\\Feishu.exe",
+    "C:\\Users\\Public\\Desktop\\飞书.lnk",
+    "feishu://"
+  ],
+  "known_page_states": [
+    "messages",
+    "calendar",
+    "docs",
+    "sheets",
+    "meetings",
+    "mail",
+    "knowledge",
+    "unknown"
+  ],
+  "stable_home_state": "messages",
+  "state_navigation_hotkeys": {
+    "messages": ["ctrl", "1"],
+    "calendar": ["ctrl", "2"],
+    "docs": ["ctrl", "3"],
+    "sheets": ["ctrl", "3"],
+    "meetings": ["ctrl", "4"],
+    "mail": ["ctrl", "5"],
+    "knowledge": ["ctrl", "6"]
+  }
+}
