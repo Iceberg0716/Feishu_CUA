@@ -10,6 +10,7 @@ from cua_lark.orchestrator import Orchestrator
 
 
 def fmt_result(r):
+    """将 StepResult 格式化为可读的终端输出。"""
     status = "PASS" if r.verdict_passed else "FAIL"
     return (
         f"[{status}] {r.instruction[:60]}\n"
@@ -22,12 +23,14 @@ def fmt_result(r):
 
 
 def run_single(instruction: str):
+    """执行单条指令并打印结果。"""
     orch = Orchestrator()
     result = orch.run_step(instruction)
     print(fmt_result(result))
 
 
 def run_test_suite(suite_path: str):
+    """从 JSON 文件加载测试用例列表，逐条执行并统计通过/失败数。"""
     suite_file = Path(suite_path)
     if not suite_file.exists():
         print(f"Test suite file not found: {suite_path}")
@@ -57,6 +60,7 @@ def run_test_suite(suite_path: str):
 
 
 def run_interactive():
+    """启动交互模式，持续接收用户输入并执行，直到输入 quit/exit/q。"""
     print("CUA-Lark Interactive Mode")
     print("Type your instruction and press Enter. Type 'quit' to exit.\n")
 
@@ -80,6 +84,7 @@ def run_interactive():
 
 
 def main():
+    """CLI 入口，解析命令行参数并分发到对应运行模式。"""
     parser = argparse.ArgumentParser(
         description="CUA-Lark: Computer-Use Agent for Lark/Feishu"
     )

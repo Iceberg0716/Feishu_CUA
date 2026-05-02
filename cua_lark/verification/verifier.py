@@ -9,6 +9,7 @@ from ..perception.vlm_client import verify_result as vlm_verify
 
 @dataclass
 class Verdict:
+    """验证结论：操作是否达到预期。"""
     passed: bool
     reason: str
     confidence: float
@@ -17,7 +18,7 @@ class Verdict:
 def verify(
     before: Image.Image, after: Image.Image, expected: str
 ) -> Verdict:
-    """Compare before/after screenshots to check if action succeeded."""
+    """对比操作前后的截图，通过 VLM 判断操作是否达到预期效果。"""
     result = vlm_verify(before, after, expected)
     return Verdict(
         passed=result.passed,

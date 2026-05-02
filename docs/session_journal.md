@@ -1,108 +1,380 @@
 # 会话日志
 
-## 2026-04-29 第 1 轮
+## 2026-04-29
 
-- 用户提出：程序执行过程中，只要用户轻微移动鼠标或敲击键盘，就可能导致执行异常，希望解决该问题。
-- 用户提出：希望设计合理的截图删除机制，只删除真正需要删除的截图。
-- 已实现：基于 Windows 系统 API 的输入活动检测模块。
-- 已实现：在主流程中加入执行前空闲等待，以及执行后、截图前的稳定等待。
-- 已实现：截图存储改为按会话目录组织，并为每个会话生成 `index.json`。
-- 已实现：按当前步骤精确删除截图，并对历史会话目录执行保留策略清理。
-- 已验证：相关 Python 文件已通过 `py_compile` 语法校验。
+### 第 1-10 轮摘要
 
-## 2026-04-29 第 2 轮
+- 解决了用户输入干预导致自动化不稳定的问题。
+- 重构了截图保存与删除机制。
+- 建立了中文项目文档体系。
+- 增加了窗口聚焦、状态识别、恢复到稳定模块、找不到飞书时自动启动。
+- 把飞书环境知识迁移到 `knowledge/feishu.json`。
+- 完成了基础使用说明文档。
+- 真机测试表明：当前环境下真实任务受外部 VLM 网络连接阻塞。
 
-- 用户要求：每一轮问答后都实时更新文档。
-- 已确认规则：新一轮开始时默认不读取文档，优先依赖当前对话上下文。
-- 已创建：`docs/` 目录及最小文档体系，用于持久化保存项目关键状态与决策。
+## 2026-04-30
 
-## 2026-04-29 第 3 轮
+### 第 1-11 轮摘要
 
-- 用户要求：项目文档统一使用中文。
-- 已处理：将现有三份项目文档全部改为中文表述，后续文档更新也继续使用中文。
+- 明确后续不做模型微调。
+- 基于本地 ShowUI / LLaVA-VLA 源码做了多轮 runtime 集成。
+- 新增前台窗口裁剪、分区分析、二阶段定位。
+- 新增 `wait`、`mouse_move`、`drag`、`ActionChunk`。
+- 把分区优先级、验证策略、恢复路径、任务模板继续知识库化。
+- 新增参数化模板，并支持模板失败回退到 VLM。
+- 无模型闭环测试持续通过。
 
-## 2026-04-29 第 4 轮
+### 第 12 轮
 
-- 用户询问：测试当前项目能否正常运行需要什么。
-- 结论：除了 Python 依赖外，还需要真实桌面环境、可用的视觉模型接口、目标应用窗口处于可见状态，以及人工避免在执行期间持续干预。
-- 用户询问：当前项目能否从任意界面开始完成任务。
-- 结论：当前不能。项目目前是单步“看图找目标再执行”的模式，没有稳定的导航规划、状态识别、窗口恢复和多步回退能力。
-- 用户询问：修改当前问题的思路是什么。
-- 结论：需要从“单步视觉点击器”升级为“状态感知 + 导航规划 + 执行保护 + 可恢复”的任务代理，重点补充起始状态识别、目标应用聚焦、通用导航回家、失败重试与回退机制。
+- 用户要求实现“模板前后条件”。
+- 已完成：
+  - 在 `knowledge/feishu.json` 为模板增加 `preconditions` 和 `postconditions`
+  - 在 `cua_lark/orchestrator.py` 增加模板前置检查
+  - 在 `cua_lark/orchestrator.py` 增加模板后置检查
+  - 模板后置条件失败时，先恢复，再回退到 VLM 路径
+  - 重写 `knowledge/feishu.json`，修复原有编码/内容异常
+  - 扩展 `tests/test_runtime_no_model.py`
+- 本轮新增回归场景：
+  - 模板前置条件不满足回退到 VLM
+  - 模板后置条件失败回退到 VLM
+- 本轮验证结果：
+  - `tests/test_runtime_no_model.py` 通过
+  - `py_compile` 通过
 
-## 2026-04-29 第 5 轮
+### 第 13 轮
 
-- 用户要求：直接开始实现“窗口聚焦 + 页面状态识别 + 失败恢复骨架”。
-- 已实现：新增 `window_manager.py`，支持枚举可见窗口、检查前台窗口、按窗口标题聚焦目标应用。
-- 已实现：新增 `state_classifier.py`，通过 VLM 判断目标应用是否在视图中，以及当前页面属于哪个已知状态。
-- 已实现：新增 `recovery.py`，提供目标窗口聚焦和保守恢复骨架。
-- 已实现：主流程在动作执行前先做窗口聚焦和页面状态识别；当页面未知时，先恢复再重试识别；当验证失败时，触发一轮恢复骨架。
-- 当前限制：恢复动作仍较保守，主要是聚焦窗口并发送 `Esc`，还没有实现按页面状态进行多步导航与重跑。
-- 已验证：新增与修改后的 Python 文件已通过 `py_compile` 语法校验。
+- 用户要求：给本项目写测试。
+- 已新增：
+  - `tests/test_parser.py`
+  - `tests/test_knowledge_and_screenshot.py`
+  - `tests/test_recovery.py`
+- 测试覆盖：
+  - 解析器 JSON 提取、坐标裁剪、热键解析、`ActionChunk` 标志位
+  - 知识库加载、模板条件读取
+  - 截图窗口裁剪、区域划分、截图索引更新
+  - 恢复链路中的聚焦、状态入口动作、全局恢复动作
+- 本轮验证结果：
+  - `python -m unittest tests.test_parser tests.test_knowledge_and_screenshot tests.test_recovery` 通过
+  - `tests/test_runtime_no_model.py` 再次通过
+  - 新增测试文件 `py_compile` 通过
 
-## 2026-04-29 第 6 轮
+### 第 14 轮
 
-- 用户要求：实现“按状态导航到稳定主页/模块，再重跑当前任务”。
-- 已实现：为已知页面状态增加可配置导航快捷键，新增 `stable_home_state` 和 `state_navigation_hotkeys` 配置。
-- 已实现：恢复流程从“聚焦窗口 + Esc”升级为“聚焦窗口 + Esc + 导航到稳定模块”。
-- 已实现：主流程新增有限重跑机制，验证失败后会在恢复到稳定模块后自动重跑当前任务。
-- 当前限制：导航仍依赖默认快捷键约定，若用户本地快捷键不同或应用版本差异较大，需要继续做可视锚点导航或外部配置。
-- 已验证：修改后的 Python 文件已通过 `py_compile` 语法校验。
+- 用户要求：给出真机飞书环境可直接执行的测试命令。
+- 已提供：
+  - 环境准备命令
+  - 语法校验命令
+  - 单元测试命令
+  - 无模型闭环命令
+  - 真机单步命令
+  - 真机交互模式命令
+  - 真机测试集命令
+- 说明重点：
+  - 真机测试前应先手动打开飞书并停手
+  - 优先从模板类、模块切换类、搜索输入类指令开始
+  - 真实任务仍依赖外部 VLM 接口连通性
 
-## 2026-04-29 第 7 轮
+### 第 15 轮
 
-- 用户要求：补充项目使用说明文档，包括如何测试、参数配置，并给出可直接粘贴使用的测试代码。
-- 已处理：新增 `docs/使用说明.md`。
-- 文档内容包括：运行前提、安装依赖、配置项说明、运行方式、测试方法、可直接粘贴执行的命令和 Python 测试代码、日志和截图说明、当前能力边界、常见问题排查。
-- 处理策略：由于现有 `README.md` 存在编码异常，本轮先新增独立中文说明文档，不直接覆盖旧 README。
+- 用户要求：切换到 MiMo / MiniMax M2.5，并做一次需要实际调用模型的真机测试。
+- 已修改：
+  - `cua_lark/config.py` 现在支持环境变量 `CUA_BASE_URL`
+- 已执行真机调用测试：
+  - `CUA_MODEL=MiniMax-M2.5`
+  - `CUA_BASE_URL=https://api.minimaxi.com/v1`
+  - 指令：`打开消息模块`
+- 实测结果：
+  - 未完成真实任务
+  - 失败点在模型接口连接阶段
+  - 异常为 `openai.APIConnectionError`
+  - 底层为 `httpx.ConnectError: EOF occurred in violation of protocol (_ssl.c:997)`
+- 当前判断：
+  - 这次失败首先是 MiniMax 端点连接/协议层问题
+  - 同时当前项目依赖截图图像输入，MiniMax M2.5 是否支持这条视觉输入链路仍需进一步核对官方文档
 
-## 2026-04-29 第 8 轮
+### 第 16 轮
 
-- 用户要求：如果当前页面没有找到飞书，就直接打开飞书。
-- 已实现：在目标窗口聚焦逻辑中加入启动飞书能力。
-- 当前行为：若前台和可见窗口中都未找到飞书，则按 `target_app_launch_commands` 配置依次尝试启动飞书，等待 `app_launch_wait_s` 后重新聚焦。
-- 已验证：相关 Python 文件已通过 `py_compile` 语法校验。
+- 用户要求：重新测试。
+- 已再次执行同一条真机命令：
+  - `CUA_MODEL=MiniMax-M2.5`
+  - `CUA_BASE_URL=https://api.minimaxi.com/v1`
+  - 指令：`打开消息模块`
+- 复测结果：
+  - 再次失败
+  - 错误与上一轮一致
+  - 仍为 `openai.APIConnectionError`
+  - 底层仍为 `httpx.ConnectError: EOF occurred in violation of protocol (_ssl.c:997)`
+- 结论：
+  - 当前不是偶发网络抖动
+  - 当前 MiniMax 端点在这台机器上的这条调用链路下不可用，至少无法完成本项目所需的真实视觉调用测试
 
-## 2026-04-29 第 9 轮
+### 第 17 轮
 
-- 用户要求：将当前硬编码配置抽成 `knowledge/feishu.json`，并改为从知识库读取。
-- 已实现：新增 `knowledge/feishu.json`，承载飞书应用知识。
-- 已实现：新增 `cua_lark/knowledge_base.py`，负责加载知识文件。
-- 已实现：主流程、页面状态识别、窗口聚焦和恢复逻辑改为读取外部知识，而不是直接依赖硬编码常量。
-- 当前效果：后续调整应用名、启动路径、页面状态和模块快捷键时，不需要修改核心执行逻辑。
-- 已验证：相关 Python 文件已通过 `py_compile` 语法校验。
+- 用户要求：使用 `gpt-4o-mini` 和新的 OpenAI key 做真机测试。
+- 已执行两次：
+  - 第一次未显式设置 OpenAI 端点，仍失败
+  - 第二次显式设置 `CUA_BASE_URL=https://api.openai.com/v1` 后再次测试
+- 第二次使用的关键环境：
+  - `CUA_MODEL=gpt-4o-mini`
+  - `CUA_BASE_URL=https://api.openai.com/v1`
+  - 指令：`打开消息模块`
+- 结果：
+  - 仍然失败
+  - 错误仍为 `openai.APIConnectionError`
+  - 底层仍为 `httpx.ConnectError: EOF occurred in violation of protocol (_ssl.c:997)`
+- 当前判断：
+  - 失败已不再是模型或端点配置错误
+  - 更像是当前机器到 OpenAI API 的 TLS/代理/网络环境问题
 
-## 2026-04-29 第 10 轮
+### 第 18 轮
 
-- 用户要求：测试当前项目是否可完成任务。
-- 已执行：`py_compile` 语法校验，通过。
-- 已执行：真实单步任务测试，指令为“点击飞书左侧导航栏的消息图标”。
-- 测试结果：任务未完成。
-- 失败原因：在页面状态识别阶段调用 VLM 接口时发生 `openai.APIConnectionError`，底层为 `httpx.ConnectError` / `WinError 10013`，说明当前环境无法建立到模型接口的网络连接。
-- 结论：当前代码链路可以启动，但在现有环境下无法完成真实任务，主要阻塞点是外部接口连接，而不是本地语法或导入错误。
+- 用户要求：重新尝试。
+- 已再次执行：
+  - `CUA_MODEL=gpt-4o-mini`
+  - `CUA_BASE_URL=https://api.openai.com/v1`
+  - 指令：`打开消息模块`
+- 结果：
+  - 仍然失败
+  - 报错与前一轮完全一致
+  - 仍为 `openai.APIConnectionError`
+  - 底层仍为 `httpx.ConnectError: EOF occurred in violation of protocol (_ssl.c:997)`
+- 结论：
+  - 当前可以排除偶发性
+  - 当前机器的 API 访问链路存在稳定的 TLS/代理/网络问题
 
-## 2026-04-30 第 1 轮
+### 第 19 轮
 
-- 用户询问：结合 ShowUI 与 LLaVA-VLA 两种开源框架，应如何修改当前项目，才能吸收两者的功能与优点。
-- 回答重点：不建议直接硬拼两个框架，而应按分层架构吸收其优势。
-- 建议分层：
-  - 感知层借鉴 ShowUI：前台窗口裁剪、分区分析、二阶段定位、局部视觉优化。
-  - 动作层借鉴 LLaVA-VLA：动作正式化、action chunk、轨迹化执行、历史状态向量。
-  - 恢复层保留当前项目优势：窗口聚焦、启动飞书、稳定模块恢复、知识库驱动重试。
-  - 数据层同时向未来训练靠拢：记录截图、状态、动作、验证结果、恢复路径，形成 GUI trajectory 数据。
-- 推荐演进顺序：
-  1. 先加 ShowUI 风格的前台窗口裁剪与分区感知。
-  2. 再加 LLaVA-VLA 风格的 action chunk schema。
-  3. 再把恢复逻辑升级为“状态图 + 动作片段执行”。
-  4. 最后再考虑接入或微调专用 GUI/VLA 模型。
-- 用户新增要求：后续每轮问答都需要继续更新 `docs/` 中文文档。
+- 用户要求：改回使用 MiMo / MiniMax M2.5 的版本。
+- 已修改：
+  - `cua_lark/config.py` 默认模型改回 `MiniMax-M2.5`
+  - `cua_lark/config.py` 默认端点改回 `https://api.minimaxi.com/v1`
+  - API Key 读取优先级改为：
+    - `CUA_API_KEY`
+    - `DASHSCOPE_API_KEY`
+    - `OPENAI_API_KEY`
+- 已验证：
+  - `cua_lark/config.py` `py_compile` 通过
+  - 默认配置实例输出为 `MiniMax-M2.5` 和 `https://api.minimaxi.com/v1`
 
-## 2026-04-30 第 2 轮
+### 第 20 轮
 
-- 用户补充约束：后续不进行微调。
-- 已调整建议：后续路线完全基于工程侧增强，不依赖模型微调。
-- 保留可借鉴方向：
-  - ShowUI：前台窗口裁剪、分区分析、二阶段定位、局部视觉优化。
-  - LLaVA-VLA：动作 schema、action chunk、轨迹执行、状态历史输入。
-- 放弃方向：自训 GUI-VLA、轻量 action fine-tuning、模型内动作 token 学习。
-- 结论：当前项目应走“外部 VLM + 强 runtime + 强知识库 + 强恢复”的路线。
+- 用户要求：改回千问的版本。
+- 已修改：
+  - `cua_lark/config.py` 默认模型改回 `qwen-vl-max`
+  - `cua_lark/config.py` 默认端点改回 `https://dashscope.aliyuncs.com/compatible-mode/v1`
+- 保留不变：
+  - API Key 读取优先级仍为 `CUA_API_KEY` -> `DASHSCOPE_API_KEY` -> `OPENAI_API_KEY`
+- 已验证：
+  - `cua_lark/config.py` `py_compile` 通过
+  - 默认配置实例输出为 `qwen-vl-max` 和 `https://dashscope.aliyuncs.com/compatible-mode/v1`
+
+### 第 21 轮
+
+- 用户要求：改回 MiMo 的版本。
+- 已修改：
+  - `cua_lark/config.py` 默认模型保留为 `mimov2.5`
+  - `cua_lark/config.py` 默认端点改回 `https://api.minimaxi.com/v1`
+- 已验证：
+  - `cua_lark/config.py` `py_compile` 通过
+  - 默认配置实例输出为 `mimov2.5` 和 `https://api.minimaxi.com/v1`
+
+### 第 22 轮
+
+- 用户提供：MiMo / MiniMax v2.5 的 API Key，并要求按当前默认配置做真机测试。
+- 已执行：
+  - 使用 `CUA_API_KEY=tp-...`
+  - 不再显式覆盖 `CUA_MODEL` 和 `CUA_BASE_URL`
+  - 指令：`打开消息模块`
+- 结果：
+  - 仍然失败
+  - 错误仍为 `openai.APIConnectionError`
+  - 底层仍为 `httpx.ConnectError: EOF occurred in violation of protocol (_ssl.c:997)`
+- 结论：
+  - 说明当前默认 MiMo 配置与用户提供的 key 组合下，真实调用链路仍卡在 TLS/连接层
+
+### 第 23 轮
+
+- 用户询问：当前开代理才能和 ChatGPT 交互，但开代理可能连不上 MiMo，应该怎么办。
+- 当前建议：
+  - 让 ChatGPT / 浏览器继续走代理
+  - 让本项目的 Python 进程单独不走代理
+- 可行方式：
+  - 在专用 PowerShell 里清空 `HTTP_PROXY`、`HTTPS_PROXY`、`ALL_PROXY`
+  - 只在这个终端里运行项目
+- 用户进一步询问：这样是否可以一边继续和我协作修改代码，一边让本地 Python 直连 MiMo。
+- 结论：
+  - 可以
+  - 前提是“对话侧代理”和“本地 Python 进程代理”是分开的
+  - 最稳的做法是开两个终端或写单独启动脚本
+
+### 第 24 轮
+
+- 用户要求：执行。
+- 已完成：
+  - 新增 `scripts/run_mimo_direct.ps1`
+  - 该脚本会清空当前 PowerShell 进程的代理环境变量
+  - 该脚本会注入 `CUA_API_KEY`、`CUA_MODEL=mimov2.5`、`CUA_BASE_URL=https://api.minimaxi.com/v1`
+- 已执行脚本：
+  - `powershell -ExecutionPolicy Bypass -File scripts\run_mimo_direct.ps1 -Instruction "打开消息模块" -ApiKey "tp-..."`
+- 实测结果：
+  - 脚本本身已可正常启动
+  - 真实模型调用仍失败
+  - 错误仍为 `openai.APIConnectionError`
+  - 底层仍为 `httpx.ConnectError: EOF occurred in violation of protocol (_ssl.c:997)`
+- 当前判断：
+  - 问题不是脚本、也不只是当前终端里的环境变量代理
+  - 还可能涉及系统代理、TLS 中间层或网络出口策略
+
+### 第 25 轮
+
+- 用户要求：把 API Key 写到 `env` 文件里。
+- 已完成：
+  - 新增项目根目录 `.env`
+  - 写入：
+    - `CUA_API_KEY=tp-...`
+    - `CUA_MODEL=mimov2.5`
+    - `CUA_BASE_URL=https://api.minimaxi.com/v1`
+  - 修改 `cua_lark/config.py`，启动时自动加载 `.env`
+- 已验证：
+  - `cua_lark/config.py` `py_compile` 通过
+  - 配置实例已能读出 `.env` 中的 MiMo 模型、端点和 key
+
+### 第 26 轮
+
+- 用户提供了 MiMo 官方 curl 示例，要求按该示例方式连接。
+- 已修改：
+  - 重写 `cua_lark/perception/vlm_client.py`
+  - 不再依赖 OpenAI SDK 发起 MiMo 请求
+  - 改为直接 `POST {BASE_URL}/chat/completions`
+  - MiMo 路径下使用 `api-key` 请求头
+  - 默认模型名改为 `mimo-v2.5-pro`
+  - `.env` 与 `scripts/run_mimo_direct.ps1` 同步改为 `mimo-v2.5-pro`
+- 已新增：
+  - `scripts/test_mimo_text.py`
+  - 用于最小文本请求复现官方 curl 示例
+- 已验证：
+  - `cua_lark/config.py` `py_compile` 通过
+  - `cua_lark/perception/vlm_client.py` `py_compile` 通过
+  - 最小 MiMo 文本请求仍失败
+  - 错误仍为 `httpx.ConnectError: EOF occurred in violation of protocol (_ssl.c:997)`
+- 结论：
+  - 现在可以排除“鉴权头写法不对”与“OpenAI SDK 兼容层问题”
+  - 当前问题已经收敛到 MiMo 端点的 TLS/网络链路本身
+
+### 第 27 轮
+
+- 用户要求：模型改为可选，当前切回原来的 Qwen，API key 放在 `.env` 文件中。
+- 已修改：
+  - `cua_lark/config.py` 默认模型改回 `qwen-vl-max`
+  - `cua_lark/config.py` 默认端点改回 `https://dashscope.aliyuncs.com/compatible-mode/v1`
+  - `.env` 当前设置为：
+    - `CUA_MODEL=qwen-vl-max`
+    - `CUA_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1`
+    - `CUA_API_KEY=tp-...`
+- 保留：
+  - 模型仍然可选，可继续通过 `.env` 或环境变量切换
+  - `cua_lark/config.py` 自动加载 `.env`
+- 已验证：
+  - `cua_lark/config.py` `py_compile` 通过
+  - 配置实例输出已确认是 Qwen 默认配置
+
+### 第 28 轮
+
+- 用户提供了阿里云百炼的参考代码，要求按该方式修改连接，模型保持当前选择不变。
+- 已修改：
+  - `cua_lark/perception/vlm_client.py` 改回 `OpenAI` 兼容调用方式
+  - 使用：
+    - `api_key=config.dashscope_api_key`
+    - `base_url=config.base_url`
+    - `client.chat.completions.create(...)`
+  - 保留当前模型仍由 `.env` / `CUA_MODEL` 控制，不强制改模型名
+- 当前 `.env` 仍为：
+  - `CUA_MODEL=qwen-vl-max`
+  - `CUA_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1`
+- 已验证：
+  - `cua_lark/config.py` `py_compile` 通过
+  - `cua_lark/perception/vlm_client.py` `py_compile` 通过
+  - 配置实例输出仍是 Qwen 当前配置
+
+### 第 29 轮
+
+- 用户指出：给出的阿里百炼示例代码可以成功连接，询问为什么当前项目代码连不上。
+- 已确认的根因：
+  - 示例代码使用的是百炼 `sk-...` key
+  - 项目之前的 `.env` 同时存在 Qwen 和 MiMo 配置
+  - 项目之前优先读取的是通用 `CUA_API_KEY`
+  - 这导致当项目切到 DashScope 端点时，实际可能拿的是之前残留的 MiMo `tp-...` key，而不是 `QWEN_API_KEY`
+- 已修复：
+  - `cua_lark/config.py` 现在按 `base_url` 自动选择对应 provider 的 key
+  - DashScope 路径优先读取 `QWEN_API_KEY`
+  - MiniMax 路径优先读取 `MIMO_API_KEY`
+  - `.env` 已改成分别保存两类 key，不再混用
+- 已验证：
+  - 当前 Qwen 配置实例读取出来的 key 已是 `sk-eb1bd...`
+
+### 第 30 轮
+
+- 用户反馈：执行 `python main.py -i "打开消息模块"` 时，实际上只看到一张截图，而且指令并未真正完成，但程序返回了 `PASS`。
+- 当前判断：
+  - 这是两个独立问题：
+    1. 截图只剩一张：
+       - 首次 `before` 截图发生在页面未知、恢复前
+       - 恢复后又生成 `before_recovered`
+       - 成功时当前代码只删除 `before_path` 和 `after_path`
+       - 因此最早那张恢复前截图会残留，看起来像“只截了一张”
+    2. 误判为成功：
+       - 从 verifier 的自然语言理由看，它引用了 IDE/终端内容
+       - 说明验证时很可能截到的仍是终端/IDE 前台，而不是真正的飞书窗口
+       - 当前 `verify_step` 仍可能在错误前台窗口上做语义判断，导致假阳性
+- 结论：
+  - 当前需要补“验证前强制确认目标应用在前台”
+  - 以及“恢复前遗留截图的清理一致性”
+
+
+### 第 31 轮
+
+- 用户提供了 trace.jsonl 执行轨迹，要求分析失败原因。
+- 已从 trace 中识别出 4 个 bug：
+  1. 滚动参数解析：VLM 输出 `direction`/`pixels`，但 parser 只读 `dy` 字段
+  2. 模板 `verify_each_step` 被策略覆盖
+  3. VLM 对搜索输入指令只输出 click，缺少 type 动作
+  4. VLM 坐标是窗口内相对坐标，但 PyAutoGUI 需要屏幕绝对坐标
+- 已修复全部 4 个问题。
+
+### 第 32 轮
+
+- 用户报告 VLM API 返回 400 错误，原因是恢复流程中截取到 <10px 的极小程序窗口。
+- 已修复：在 3 层增加尺寸保护（screenshot.py / vlm_client.py），<20px 时回退到全屏或返回安全默认值。
+
+### 第 33 轮
+
+- 用户询问如何提高 VLM 定位准确性。
+- 已实现 `localization_mode`（full_window/region）和 `preclick_confirmation`（点击前 80x80 补丁二次确认）两个配置项。
+
+### 第 34 轮
+
+- 滚动仍不生效 + 搜索误点击云文档搜索而非全局搜索。
+- 滚动修复：ScrollAction 增加 x/y 字段，滚轮前先 moveTo 定位光标。
+- ActionChunk 确认修复：`_confirm_click_target` 改为递归提取第一个 click 子动作做确认。
+
+### 第 35 轮
+
+- 模板 fallback 路径缺少点击确认，回退后仍可能误点击。
+- 已修复：template fallback 分支增加 `_confirm_click_target` 调用，同步更新测试 mock。
+
+### 第 36 轮
+
+- 中文输入失败：输入「测试群」实际得到「1」。
+- 根因：pyautogui.typewrite() 无法处理中文字符。
+- 已修复：改用 pyperclip 剪贴板粘贴（Ctrl+V），新增依赖到 requirements.txt。
+
+### 第 37 轮
+
+- 输入内容出现多余前缀「 1 1测试群 并停留1秒」。
+- 根因：搜索框中残留先前操作的内容。
+- 已修复：粘贴前增加 Ctrl+A → Backspace 清空输入框。
+
+### 第 38 轮
+
+- 用户要求更新 docs 中文档。
+- 已更新全部 6 份文档：使用说明、会话日志、项目状态、决策记录、实现日志、README。
