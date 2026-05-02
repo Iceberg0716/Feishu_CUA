@@ -9,6 +9,7 @@ from ctypes import wintypes
 
 user32 = ctypes.windll.user32
 
+# 监控的虚拟键码范围：鼠标、Tab/Enter、修饰键、Esc、空格、方向键、数字键、字母键、功能键
 VK_CODES = [
     0x01,  # left mouse
     0x02,  # right mouse
@@ -33,12 +34,14 @@ class POINT(ctypes.Structure):
 
 
 def get_cursor_pos() -> tuple[int, int]:
+    """获取当前鼠标光标位置 (x, y)。"""
     point = POINT()
     user32.GetCursorPos(ctypes.byref(point))
     return point.x, point.y
 
 
 def has_keyboard_activity() -> bool:
+    """检查当前是否有任何键盘按键处于按下状态。"""
     for vk in VK_CODES:
         if user32.GetAsyncKeyState(vk) & 0x8000:
             return True
