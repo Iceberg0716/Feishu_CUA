@@ -1,0 +1,921 @@
+{
+  "app_names": [
+    "Feishu",
+    "Lark",
+    "飞书"
+  ],
+  "launch_commands": [
+    "C:\\Program Files\\Feishu\\Feishu.exe",
+    "C:\\Program Files (x86)\\Feishu\\Feishu.exe",
+    "C:\\Users\\Public\\Desktop\\飞书.lnk",
+    "/Applications/Feishu.app",
+    "/Applications/飞书.app",
+    "/Applications/Lark.app",
+    "feishu://"
+  ],
+  "known_page_states": [
+    "messages",
+    "calendar",
+    "docs",
+    "sheets",
+    "meetings",
+    "mail",
+    "knowledge",
+    "unknown"
+  ],
+  "stable_home_state": "messages",
+  "state_navigation_hotkeys": {
+    "messages": [
+      "ctrl",
+      "1"
+    ],
+    "calendar": [
+      "ctrl",
+      "2"
+    ],
+    "docs": [
+      "ctrl",
+      "3"
+    ],
+    "sheets": [
+      "ctrl",
+      "3"
+    ],
+    "meetings": [
+      "ctrl",
+      "4"
+    ],
+    "mail": [
+      "ctrl",
+      "5"
+    ],
+    "knowledge": [
+      "ctrl",
+      "6"
+    ]
+  },
+  "region_preferences": {
+    "default": [
+      "content",
+      "top_bar",
+      "left_nav"
+    ],
+    "messages": [
+      "left_nav",
+      "content",
+      "top_bar"
+    ],
+    "calendar": [
+      "left_nav",
+      "content",
+      "top_bar"
+    ],
+    "docs": [
+      "content",
+      "left_nav",
+      "top_bar"
+    ],
+    "search": [
+      "top_bar",
+      "content",
+      "left_nav"
+    ],
+    "navigation": [
+      "left_nav",
+      "content",
+      "top_bar"
+    ],
+    "conversation": [
+      "top_bar",
+      "content",
+      "left_nav"
+    ],
+    "message_input": [
+      "content",
+      "top_bar",
+      "left_nav"
+    ],
+    "calendar_editor": [
+      "content",
+      "top_bar",
+      "left_nav"
+    ],
+    "docs_list": [
+      "content",
+      "top_bar",
+      "left_nav"
+    ]
+  },
+  "validation_policies": {
+    "default": {
+      "verify_after_action": true,
+      "verify_each_step": false,
+      "stop_on_failure": true
+    },
+    "click": {
+      "verify_after_action": true,
+      "verify_each_step": false,
+      "stop_on_failure": true
+    },
+    "type": {
+      "verify_after_action": true,
+      "verify_each_step": false,
+      "stop_on_failure": true
+    },
+    "chunk": {
+      "verify_after_action": true,
+      "verify_each_step": true,
+      "stop_on_failure": true
+    },
+    "drag": {
+      "verify_after_action": true,
+      "verify_each_step": true,
+      "stop_on_failure": true
+    }
+  },
+  "recovery_sequences": {
+    "global": [
+      {
+        "action": "hotkey",
+        "params": {
+          "keys": [
+            "esc"
+          ]
+        }
+      }
+    ],
+    "state_entry": {
+      "messages": [
+        {
+          "action": "hotkey",
+          "params": {
+            "keys": [
+              "ctrl",
+              "1"
+            ]
+          }
+        }
+      ],
+      "calendar": [
+        {
+          "action": "hotkey",
+          "params": {
+            "keys": [
+              "ctrl",
+              "2"
+            ]
+          }
+        }
+      ],
+      "docs": [
+        {
+          "action": "hotkey",
+          "params": {
+            "keys": [
+              "ctrl",
+              "3"
+            ]
+          }
+        }
+      ],
+      "meetings": [
+        {
+          "action": "hotkey",
+          "params": {
+            "keys": [
+              "ctrl",
+              "4"
+            ]
+          }
+        }
+      ],
+      "mail": [
+        {
+          "action": "hotkey",
+          "params": {
+            "keys": [
+              "ctrl",
+              "5"
+            ]
+          }
+        }
+      ],
+      "knowledge": [
+        {
+          "action": "hotkey",
+          "params": {
+            "keys": [
+              "ctrl",
+              "6"
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "task_templates": [
+    {
+      "name": "open_messages_module",
+      "allowed_states": [
+        "messages",
+        "calendar",
+        "docs",
+        "unknown"
+      ],
+      "preconditions": {
+        "app_in_view": true,
+        "state_in": [
+          "messages",
+          "calendar",
+          "docs",
+          "unknown"
+        ]
+      },
+      "match_any": [
+        "消息图标",
+        "消息模块",
+        "打开消息"
+      ],
+      "action": {
+        "goal": "打开消息模块",
+        "actions": [
+          {
+            "action": "hotkey",
+            "params": {
+              "keys": [
+                "ctrl",
+                "1"
+              ]
+            }
+          },
+          {
+            "action": "wait",
+            "params": {
+              "ms": 300
+            }
+          }
+        ],
+        "verify_each_step": false,
+        "stop_on_failure": true
+      },
+      "postconditions": {
+        "app_in_view": true,
+        "state_in": [
+          "messages"
+        ]
+      }
+    },
+    {
+      "name": "open_calendar_module",
+      "allowed_states": [
+        "messages",
+        "calendar",
+        "docs",
+        "unknown"
+      ],
+      "preconditions": {
+        "app_in_view": true,
+        "state_in": [
+          "messages",
+          "calendar",
+          "docs",
+          "unknown"
+        ]
+      },
+      "match_any": [
+        "日历图标",
+        "日历模块",
+        "打开日历"
+      ],
+      "action": {
+        "goal": "打开日历模块",
+        "actions": [
+          {
+            "action": "hotkey",
+            "params": {
+              "keys": [
+                "ctrl",
+                "2"
+              ]
+            }
+          },
+          {
+            "action": "wait",
+            "params": {
+              "ms": 300
+            }
+          }
+        ],
+        "verify_each_step": false,
+        "stop_on_failure": true
+      },
+      "postconditions": {
+        "app_in_view": true,
+        "state_in": [
+          "calendar"
+        ]
+      }
+    },
+    {
+      "name": "search_text",
+      "allowed_states": [
+        "messages",
+        "docs",
+        "calendar"
+      ],
+      "preconditions": {
+        "app_in_view": true,
+        "state_in": [
+          "messages",
+          "docs",
+          "calendar"
+        ]
+      },
+      "match_any": [
+        "搜索",
+        "输入"
+      ],
+      "slots": {
+        "text": {
+          "pattern": "输入\\s+(.+)$",
+          "stop_patterns": [
+            "\\s+并(?:停留|等待|发送|点击).*$",
+            "\\s+然后.*$",
+            "\\s+之后.*$"
+          ],
+          "replacements": [
+            {
+              "pattern": "^[\"'“”‘’]+|[\"'“”‘’]+$",
+              "with": ""
+            }
+          ]
+        }
+      },
+      "action": {
+        "goal": "在搜索框中输入文本",
+        "actions": [
+          {
+            "action": "hotkey",
+            "params": {
+              "keys": [
+                "ctrl",
+                "f"
+              ]
+            }
+          },
+          {
+            "action": "wait",
+            "params": {
+              "ms": 300
+            }
+          },
+          {
+            "action": "type",
+            "params": {
+              "text": "{{text}}"
+            }
+          }
+        ],
+        "verify_each_step": false,
+        "stop_on_failure": true
+      },
+      "postconditions": {
+        "app_in_view": true,
+        "verify_instruction": "在搜索框中输入 {{text}}"
+      }
+    },
+    {
+      "name": "open_conversation",
+      "allowed_states": [
+        "messages",
+        "calendar",
+        "docs",
+        "unknown"
+      ],
+      "preconditions": {
+        "app_in_view": true
+      },
+      "match_any": [
+        "搜索并打开会话",
+        "打开会话",
+        "搜索会话",
+        "打开聊天",
+        "搜索群聊"
+      ],
+      "slots": {
+        "target": {
+          "pattern": "(?:搜索并打开会话|打开会话|搜索会话|打开聊天|搜索群聊)\\s+(.+)$",
+          "stop_patterns": [
+            "\\s+并.*$",
+            "\\s+然后.*$",
+            "\\s+之后.*$"
+          ],
+          "replacements": [
+            {
+              "pattern": "^[\"'“”‘’]+|[\"'“”‘’]+$",
+              "with": ""
+            }
+          ]
+        }
+      },
+      "action": {
+        "goal": "搜索并打开飞书会话",
+        "actions": [
+          {
+            "action": "hotkey",
+            "params": {
+              "keys": [
+                "ctrl",
+                "1"
+              ]
+            }
+          },
+          {
+            "action": "wait",
+            "params": {
+              "ms": 300
+            }
+          },
+          {
+            "action": "hotkey",
+            "params": {
+              "keys": [
+                "ctrl",
+                "f"
+              ]
+            }
+          },
+          {
+            "action": "wait",
+            "params": {
+              "ms": 300
+            }
+          },
+          {
+            "action": "type",
+            "params": {
+              "text": "{{target}}"
+            }
+          },
+          {
+            "action": "wait",
+            "params": {
+              "ms": 500
+            }
+          },
+          {
+            "action": "hotkey",
+            "params": {
+              "keys": [
+                "enter"
+              ]
+            }
+          },
+          {
+            "action": "wait",
+            "params": {
+              "ms": 600
+            }
+          }
+        ],
+        "verify_each_step": false,
+        "stop_on_failure": true
+      },
+      "postconditions": {
+        "app_in_view": true,
+        "state_in": [
+          "messages"
+        ],
+        "verify_instruction": "已打开与 {{target}} 相关的飞书会话或搜索结果"
+      }
+    },
+    {
+      "name": "send_message_to_target",
+      "allowed_states": [
+        "messages",
+        "calendar",
+        "docs",
+        "unknown"
+      ],
+      "preconditions": {
+        "app_in_view": true
+      },
+      "match_any": [
+        "发送消息",
+        "发消息",
+        "通知"
+      ],
+      "slots": {
+        "target": {
+          "pattern": "给\\s*(.+?)\\s*(?:发送消息|发消息|发送|通知)\\s+(.+)$",
+          "group": 1,
+          "replacements": [
+            {
+              "pattern": "^[\"'“”‘’]+|[\"'“”‘’]+$",
+              "with": ""
+            }
+          ]
+        },
+        "message": {
+          "pattern": "给\\s*(.+?)\\s*(?:发送消息|发消息|发送|通知)\\s+(.+)$",
+          "group": 2,
+          "stop_patterns": [
+            "\\s+并(?:停留|等待).*$",
+            "\\s+然后.*$",
+            "\\s+之后.*$"
+          ],
+          "replacements": [
+            {
+              "pattern": "^[\"'“”‘’：:，,\\s]+|[\"'“”‘’]+$",
+              "with": ""
+            }
+          ]
+        }
+      },
+      "action": {
+        "goal": "给指定飞书会话发送消息",
+        "actions": [
+          {
+            "action": "hotkey",
+            "params": {
+              "keys": [
+                "ctrl",
+                "1"
+              ]
+            }
+          },
+          {
+            "action": "wait",
+            "params": {
+              "ms": 300
+            }
+          },
+          {
+            "action": "hotkey",
+            "params": {
+              "keys": [
+                "ctrl",
+                "f"
+              ]
+            }
+          },
+          {
+            "action": "wait",
+            "params": {
+              "ms": 300
+            }
+          },
+          {
+            "action": "type",
+            "params": {
+              "text": "{{target}}"
+            }
+          },
+          {
+            "action": "wait",
+            "params": {
+              "ms": 500
+            }
+          },
+          {
+            "action": "hotkey",
+            "params": {
+              "keys": [
+                "enter"
+              ]
+            }
+          },
+          {
+            "action": "wait",
+            "params": {
+              "ms": 700
+            }
+          },
+          {
+            "action": "type",
+            "params": {
+              "text": "{{message}}"
+            }
+          },
+          {
+            "action": "wait",
+            "params": {
+              "ms": 200
+            }
+          },
+          {
+            "action": "hotkey",
+            "params": {
+              "keys": [
+                "enter"
+              ]
+            }
+          },
+          {
+            "action": "wait",
+            "params": {
+              "ms": 500
+            }
+          }
+        ],
+        "verify_each_step": false,
+        "stop_on_failure": true
+      },
+      "postconditions": {
+        "app_in_view": true,
+        "state_in": [
+          "messages"
+        ],
+        "verify_instruction": "已向 {{target}} 发送消息 {{message}}"
+      }
+    },
+    {
+      "name": "create_calendar_event_title",
+      "allowed_states": [
+        "messages",
+        "calendar",
+        "docs",
+        "unknown"
+      ],
+      "preconditions": {
+        "app_in_view": true
+      },
+      "match_any": [
+        "创建日程",
+        "新建日程"
+      ],
+      "slots": {
+        "title": {
+          "pattern": "(?:创建日程|新建日程)\\s+(.+)$",
+          "stop_patterns": [
+            "\\s+时间\\s+.*$",
+            "\\s+参与人\\s+.*$",
+            "\\s+并.*$",
+            "\\s+然后.*$",
+            "\\s+之后.*$"
+          ],
+          "replacements": [
+            {
+              "pattern": "^[\"'“”‘’]+|[\"'“”‘’]+$",
+              "with": ""
+            }
+          ]
+        }
+      },
+      "action": {
+        "goal": "创建飞书日程并填写标题",
+        "actions": [
+          {
+            "action": "hotkey",
+            "params": {
+              "keys": [
+                "ctrl",
+                "2"
+              ]
+            }
+          },
+          {
+            "action": "wait",
+            "params": {
+              "ms": 500
+            }
+          },
+          {
+            "action": "hotkey",
+            "params": {
+              "keys": [
+                "ctrl",
+                "n"
+              ]
+            }
+          },
+          {
+            "action": "wait",
+            "params": {
+              "ms": 500
+            }
+          },
+          {
+            "action": "type",
+            "params": {
+              "text": "{{title}}"
+            }
+          },
+          {
+            "action": "wait",
+            "params": {
+              "ms": 300
+            }
+          }
+        ],
+        "verify_each_step": false,
+        "stop_on_failure": true
+      },
+      "postconditions": {
+        "app_in_view": true,
+        "verify_instruction": "飞书日程创建界面中已填写标题 {{title}}"
+      }
+    },
+    {
+      "name": "open_document_by_name",
+      "allowed_states": [
+        "messages",
+        "calendar",
+        "docs",
+        "unknown"
+      ],
+      "preconditions": {
+        "app_in_view": true
+      },
+      "match_any": [
+        "打开文档",
+        "搜索并打开文档",
+        "打开云文档"
+      ],
+      "slots": {
+        "doc_name": {
+          "pattern": "(?:搜索并打开文档|打开云文档|打开文档)\\s+(.+)$",
+          "stop_patterns": [
+            "\\s+并.*$",
+            "\\s+然后.*$",
+            "\\s+之后.*$"
+          ],
+          "replacements": [
+            {
+              "pattern": "^[\"'“”‘’]+|[\"'“”‘’]+$",
+              "with": ""
+            }
+          ]
+        }
+      },
+      "action": {
+        "goal": "搜索并打开飞书文档",
+        "actions": [
+          {
+            "action": "hotkey",
+            "params": {
+              "keys": [
+                "ctrl",
+                "3"
+              ]
+            }
+          },
+          {
+            "action": "wait",
+            "params": {
+              "ms": 500
+            }
+          },
+          {
+            "action": "hotkey",
+            "params": {
+              "keys": [
+                "ctrl",
+                "f"
+              ]
+            }
+          },
+          {
+            "action": "wait",
+            "params": {
+              "ms": 300
+            }
+          },
+          {
+            "action": "type",
+            "params": {
+              "text": "{{doc_name}}"
+            }
+          },
+          {
+            "action": "wait",
+            "params": {
+              "ms": 500
+            }
+          },
+          {
+            "action": "hotkey",
+            "params": {
+              "keys": [
+                "enter"
+              ]
+            }
+          },
+          {
+            "action": "wait",
+            "params": {
+              "ms": 800
+            }
+          }
+        ],
+        "verify_each_step": false,
+        "stop_on_failure": true
+      },
+      "postconditions": {
+        "app_in_view": true,
+        "verify_instruction": "已打开或定位到飞书文档 {{doc_name}}"
+      }
+    },
+    {
+      "name": "scroll_current_message_list_down",
+      "allowed_states": [
+        "messages"
+      ],
+      "preconditions": {
+        "app_in_view": true,
+        "state_in": [
+          "messages"
+        ]
+      },
+      "match_any": [
+        "当前消息列表向下滚动",
+        "消息列表中向下滚动",
+        "消息列表向下滚动",
+        "消息列表向下翻"
+      ],
+      "action": {
+        "goal": "在当前飞书消息列表中向下滚动",
+        "actions": [
+          {
+            "action": "scroll",
+            "params": {
+              "dy": -600,
+              "x": 720,
+              "y": 520
+            }
+          },
+          {
+            "action": "wait",
+            "params": {
+              "ms": 300
+            }
+          }
+        ],
+        "verify_each_step": false,
+        "stop_on_failure": true
+      },
+      "postconditions": {
+        "app_in_view": true,
+        "state_in": [
+          "messages"
+        ],
+        "verify_instruction": "当前飞书消息列表已经向下滚动"
+      }
+    },
+    {
+      "name": "open_recent_document",
+      "allowed_states": [
+        "messages",
+        "calendar",
+        "docs",
+        "unknown"
+      ],
+      "preconditions": {
+        "app_in_view": true
+      },
+      "match_any": [
+        "打开最近文档",
+        "最近文档"
+      ],
+      "action": {
+        "goal": "打开飞书最近文档",
+        "actions": [
+          {
+            "action": "hotkey",
+            "params": {
+              "keys": [
+                "ctrl",
+                "3"
+              ]
+            }
+          },
+          {
+            "action": "wait",
+            "params": {
+              "ms": 700
+            }
+          },
+          {
+            "action": "double_click",
+            "params": {
+              "x": 620,
+              "y": 240
+            }
+          },
+          {
+            "action": "wait",
+            "params": {
+              "ms": 800
+            }
+          }
+        ],
+        "verify_each_step": false,
+        "stop_on_failure": true
+      },
+      "postconditions": {
+        "app_in_view": true,
+        "verify_instruction": "已打开飞书最近文档或最近文档列表中的文档"
+      }
+    }
+  ]
+}

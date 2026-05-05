@@ -1,5 +1,13 @@
 [
   {
+    "instruction": "在飞书的搜索框中输入 测试群 并停留1秒",
+    "expected_action": "type"
+  },
+  {
+    "instruction": "在飞书的消息列表中向下滚动",
+    "expected_action": "scroll"
+  },
+  {
     "instruction": "点击飞书左侧导航栏的消息图标",
     "expected_action": "click"
   },
@@ -8,15 +16,23 @@
     "expected_action": "click"
   },
   {
-    "instruction": "在飞书的搜索框中输入 测试群",
-    "expected_action": "type"
+    "instruction": "搜索并打开会话 测试群",
+    "expected_action": "chunk"
   },
   {
-    "instruction": "使用快捷键 Ctrl+N 创建新消息",
-    "expected_action": "hotkey"
+    "instruction": "给 测试群 发送消息 ：这是一条自动化测试消息",
+    "expected_action": "chunk"
   },
   {
-    "instruction": "在飞书的消息列表中向下滚动",
-    "expected_action": "scroll"
+    "instruction": "创建日程 项目同步会 时间 明天10点",
+    "expected_action": "chunk"
+  },
+  {
+    "instruction": "打开文档 项目计划",
+    "expected_action": "chunk"
+  },
+  {
+    "instruction": "打开最近文档",
+    "expected_action": "chunk"
   }
 ]
