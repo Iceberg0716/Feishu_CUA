@@ -19,6 +19,10 @@ foreach ($name in $proxyVars) {
 }
 
 if (-not $ApiKey) {
+    $ApiKey = $env:MIMO_API_KEY
+}
+
+if (-not $ApiKey) {
     $ApiKey = $env:CUA_API_KEY
 }
 
@@ -30,9 +34,9 @@ if (-not $ApiKey) {
     throw "Missing MiMo API key. Pass -ApiKey or set CUA_API_KEY first."
 }
 
-$env:CUA_API_KEY = $ApiKey
+$env:MIMO_API_KEY = $ApiKey
 $env:CUA_MODEL = "mimo-v2.5-pro"
-$env:CUA_BASE_URL = "https://api.minimaxi.com/v1"
+$env:CUA_BASE_URL = "https://token-plan-cn.xiaomimimo.com/v1"
 
 Write-Host "Running MiMo direct test without proxy..."
 Write-Host "Model: $env:CUA_MODEL"

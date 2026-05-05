@@ -9,8 +9,8 @@ import httpx
 
 
 def main() -> int:
-    api_key = os.environ.get("CUA_API_KEY", "")
-    base_url = os.environ.get("CUA_BASE_URL", "https://api.minimaxi.com/v1").rstrip("/")
+    api_key = os.environ.get("MIMO_API_KEY") or os.environ.get("CUA_API_KEY", "")
+    base_url = os.environ.get("CUA_BASE_URL", "https://token-plan-cn.xiaomimimo.com/v1").rstrip("/")
     model = os.environ.get("CUA_MODEL", "mimo-v2.5-pro")
     if not api_key:
         raise RuntimeError("Missing CUA_API_KEY")
@@ -30,7 +30,7 @@ def main() -> int:
         "max_completion_tokens": 1024,
     }
     headers = {
-        "api-key": api_key,
+        "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
     }
 

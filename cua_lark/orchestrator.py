@@ -152,13 +152,36 @@ class Orchestrator:
             return {}
         extracted: dict[str, str] = {}
         for slot_name, slot_config in slots.items():
+            if not isinstance(slot_config, dict):
+                return None
             pattern = slot_config.get("pattern", "")
             if not pattern:
                 return None
             match = re.search(pattern, instruction)
             if not match:
                 return None
-            extracted[slot_name] = match.group(1).strip()
+            group = slot_config.get("group", 1)
+            try:
+                raw_value = match.group(group)
+            except (IndexError, KeyError):
+                return None
+            if raw_value is None:
+                return None
+            value = raw_value.strip()
+            for stop_pattern in slot_config.get("stop_patterns", []):
+                stop_match = re.search(stop_pattern, value)
+                if stop_match:
+                    value = value[: stop_match.start()].strip()
+            for replacement in slot_config.get("replacements", []):
+                if not isinstance(replacement, dict):
+                    continue
+                replace_pattern = replacement.get("pattern", "")
+                replace_with = replacement.get("with", "")
+                if replace_pattern:
+                    value = re.sub(replace_pattern, replace_with, value).strip()
+            if not value:
+                return None
+            extracted[slot_name] = value
         return extracted
 
     def _apply_slots(self, value, slots: dict[str, str]):
@@ -223,6 +246,8 @@ class Orchestrator:
         instruction: str,
         page_state: str,
         app_in_view: bool,
+        screen_width: int = 4000,
+        screen_height: int = 4000,
     ) -> tuple[Action | None, str, dict[str, object] | None, dict[str, str]]:
         """尝试从知识库模板中匹配指令并生成动作。
 
@@ -246,7 +271,14 @@ class Orchestrator:
             action_payload = self._apply_slots(action_payload, slots or {})
             actions = []
             for item in action_payload.get("actions", []):
-                actions.append(_parse_atomic_action(item.get("action", ""), item.get("params", {}), 4000, 4000))
+                actions.append(
+                    _parse_atomic_action(
+                        item.get("action", ""),
+                        item.get("params", {}),
+                        screen_width,
+                        screen_height,
+                    )
+                )
             action = ActionChunk(
                 goal=action_payload.get("goal", template.get("name", "")),
                 actions=actions,
@@ -475,6 +507,8 @@ class Orchestrator:
             instruction,
             page_state.state,
             page_state.app_in_view,
+            window_img.width,
+            window_img.height,
         )
         action = template_action
         vlm_raw = template_raw

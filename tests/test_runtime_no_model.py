@@ -283,8 +283,49 @@ def main() -> int:
             assert analyze_calls_case5 != []
             assert "HotkeyAction" in executed_actions_case5
             assert "ClickAction" in executed_actions_case5
+
+            specialized_cases = [
+                ("搜索并打开会话 测试群", ["HotkeyAction", "TypeAction"]),
+                ("给 测试群 发送消息 ：上线完成 并停留1秒", ["HotkeyAction", "TypeAction"]),
+                ("创建日程 项目同步会 时间 明天10点", ["HotkeyAction", "TypeAction"]),
+                ("打开文档 项目计划 然后等待", ["HotkeyAction", "TypeAction"]),
+                ("在当前消息列表向下滚动", ["ScrollAction"]),
+                ("打开最近文档", ["HotkeyAction", "DoubleClickAction"]),
+            ]
+            specialized_results: list[tuple[str, list[str]]] = []
+
+            for instruction, expected_action_names in specialized_cases:
+                executed_actions: list[str] = []
+                analyze_calls: list[str] = []
+
+                def fake_execute_specialized(action):
+                    if isinstance(action, ActionChunk):
+                        executed_actions.append("ActionChunk")
+                        for sub_action in action.actions:
+                            executed_actions.append(type(sub_action).__name__)
+                    else:
+                        executed_actions.append(type(action).__name__)
+
+                def fake_analyze_screen_specialized(_image, _instruction, region_hint=""):
+                    analyze_calls.append(region_hint)
+                    raise RuntimeError("specialized template path should skip analyze_screen")
+
+                patches = _make_common_patches(fake_analyze_screen_specialized, fake_execute_specialized)
+                with patches[0], patches[1], patches[2], patches[3], patches[4], patches[5], patches[6], patches[7]:
+                    orch = Orchestrator()
+                    orch.screenshot.capture = _fake_capture_factory(tmpdir)
+                    orch.screenshot.crop_foreground_window = lambda image: (image, None)
+                    result = orch.run_step(instruction)
+
+                assert result.verdict_passed is True
+                assert result.region_hint == "knowledge_template"
+                assert analyze_calls == []
+                for action_name in expected_action_names:
+                    assert action_name in executed_actions
+                specialized_results.append((instruction, executed_actions))
+
             lines = trace_file.read_text(encoding="utf-8").strip().splitlines()
-            assert len(lines) == 5
+            assert len(lines) == 11
 
             print("NO_MODEL_RUNTIME_TEST: PASS")
             print(f"trace_file={trace_file}")
@@ -298,6 +339,7 @@ def main() -> int:
             print(f"case4_analyze_calls={analyze_calls_case4}")
             print(f"case5_actions={executed_actions_case5}")
             print(f"case5_analyze_calls={analyze_calls_case5}")
+            print(f"specialized_results={specialized_results}")
             return 0
         finally:
             config.trace_file = old_trace

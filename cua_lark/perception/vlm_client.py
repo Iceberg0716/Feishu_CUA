@@ -9,6 +9,7 @@ import re
 import time
 from dataclasses import dataclass
 
+import httpx
 from openai import OpenAI
 from PIL import Image
 
@@ -77,10 +78,18 @@ CONFIRM_TARGET_PROMPT = """你是 GUI 元素识别助手。图片中心位置（
 只输出 JSON。"""
 
 
+VLM_MAX_LONG_SIDE = 1280  # 发送给 VLM 前，将截图最长边缩放到此像素，减少上传和处理时间
+
+
 def _encode_image(image: Image.Image) -> str:
-    """将 PIL Image 编码为 Base64 PNG 字符串，用于 VLM API 请求。"""
+    """将 PIL Image 缩放并编码为 Base64 JPEG 字符串，用于 VLM API 请求。"""
+    w, h = image.size
+    longest = max(w, h)
+    if longest > VLM_MAX_LONG_SIDE:
+        scale = VLM_MAX_LONG_SIDE / longest
+        image = image.resize((int(w * scale), int(h * scale)), Image.LANCZOS)
     buf = io.BytesIO()
-    image.save(buf, format="PNG")
+    image.save(buf, format="JPEG", quality=80)
     return base64.b64encode(buf.getvalue()).decode("utf-8")
 
 
@@ -90,6 +99,7 @@ def _build_client() -> OpenAI:
         api_key=config.dashscope_api_key,
         base_url=config.base_url,
         timeout=config.request_timeout,
+        http_client=httpx.Client(timeout=config.request_timeout, trust_env=False),
     )
 
 
@@ -99,14 +109,20 @@ def _request_chat_completion(messages: list[dict], label: str) -> str:
     raw = ""
     for attempt in range(config.max_retries):
         try:
+            print(f"[VLM-REQ] {label} attempt={attempt+1}/{config.max_retries} model={config.model_name} ...", flush=True)
+            t0 = time.time()
             completion = client.chat.completions.create(
                 model=config.model_name,
                 messages=messages,
                 max_completion_tokens=1024,
             )
+            elapsed = time.time() - t0
             raw = completion.choices[0].message.content or ""
+            print(f"[VLM-RSP] {label} {elapsed:.1f}s len={len(raw)}", flush=True)
             return raw
         except Exception as exc:
+            elapsed = time.time() - t0
+            print(f"[VLM-ERR] {label} {elapsed:.1f}s error={exc}", flush=True)
             if attempt < config.max_retries - 1:
                 time.sleep(attempt + 1)
                 continue
@@ -119,7 +135,7 @@ def _image_message_parts(image_b64: str, text: str) -> list[dict]:
     return [
         {
             "type": "image_url",
-            "image_url": {"url": f"data:image/png;base64,{image_b64}"},
+            "image_url": {"url": f"data:image/jpeg;base64,{image_b64}"},
         },
         {"type": "text", "text": text},
     ]

@@ -7,7 +7,7 @@ import time
 from ctypes import wintypes
 
 
-user32 = ctypes.windll.user32
+user32 = ctypes.windll.user32 if hasattr(ctypes, "windll") else None
 
 # 监控的虚拟键码范围：鼠标、Tab/Enter、修饰键、Esc、空格、方向键、数字键、字母键、功能键
 VK_CODES = [
@@ -35,6 +35,8 @@ class POINT(ctypes.Structure):
 
 def get_cursor_pos() -> tuple[int, int]:
     """获取当前鼠标光标位置 (x, y)。"""
+    if user32 is None:
+        return 0, 0
     point = POINT()
     user32.GetCursorPos(ctypes.byref(point))
     return point.x, point.y
@@ -42,6 +44,8 @@ def get_cursor_pos() -> tuple[int, int]:
 
 def has_keyboard_activity() -> bool:
     """检查当前是否有任何键盘按键处于按下状态。"""
+    if user32 is None:
+        return False
     for vk in VK_CODES:
         if user32.GetAsyncKeyState(vk) & 0x8000:
             return True

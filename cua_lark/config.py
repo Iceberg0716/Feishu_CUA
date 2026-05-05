@@ -76,7 +76,7 @@ class Config:
         )
     )
     max_retries: int = 3                # VLM API 请求最大重试次数
-    request_timeout: int = 30           # VLM API 请求超时秒数
+    request_timeout: int = 90           # VLM API 请求超时秒数
     log_dir: str = "logs"              # 日志存储目录
     screenshot_dir: str = "logs/screenshots"  # 截图存储目录
     trace_file: str = "logs/trace.jsonl"     # 操作轨迹 JSONL 文件

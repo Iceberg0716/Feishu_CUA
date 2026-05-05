@@ -76,7 +76,7 @@ def _parse_atomic_action(action_type: str, params: dict, screen_width: int, scre
             dy = params.get("amount")
         if dy is None:
             direction = params.get("direction", "")
-            dy = -300 if direction == "up" else (300 if direction == "down" else 0)
+            dy = 300 if direction == "up" else (-300 if direction == "down" else 0)
         x = int(params.get("x", 0))
         y = int(params.get("y", 0))
         return ScrollAction(dy=int(dy), x=x, y=y)
