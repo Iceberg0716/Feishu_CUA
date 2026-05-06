@@ -54,24 +54,40 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def cmd_doctor() -> int:
+def _vision_ocr_enabled(config: dict) -> bool:
+    vision = config.get("vision") if isinstance(config.get("vision"), dict) else {}
+    if isinstance(vision, dict) and "ocr_enabled" in vision:
+        return bool(vision.get("ocr_enabled"))
+    ocr = config.get("ocr") if isinstance(config.get("ocr"), dict) else {}
+    return bool(ocr.get("enabled", True))
+
+
+def cmd_doctor(*, config_path: str) -> int:
     print("Doctor:")
     print("- Config: use `--config config.yaml` (copy from config.example.yaml).")
     print("- Env: put secrets in `.env` (see `.env.example`).")
     print("- Feishu/Lark desktop must be running and logged in.")
     load_dotenv(".env", override=False)
+    try:
+        config = load_yaml_config(config_path)
+    except Exception as exc:
+        print(f"- config load: WARN ({exc})")
+        config = {}
 
     def _check_import(mod: str) -> None:
         try:
             __import__(mod)
             print(f"- import {mod}: OK")
         except Exception as exc:
-            print(f"- import {mod}: FAIL ({exc})")
+            print(f"- import {mod}: WARN ({exc})")
 
     _check_import("pyautogui")
     _check_import("pywinauto")
-    _check_import("paddleocr")
-    _check_import("paddle")
+    if _vision_ocr_enabled(config):
+        _check_import("paddleocr")
+        _check_import("paddle")
+    else:
+        print("- ocr: DISABLED (skip paddleocr/paddle import checks)")
 
     for k in ["VLM_BASE_URL", "VLM_MODEL", "DASHSCOPE_API_KEY"]:
         v = os.environ.get(k)
@@ -146,7 +162,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
 
     if args.command == "doctor":
-        return cmd_doctor()
+        return cmd_doctor(config_path=args.config)
 
     if args.command == "run":
         return cmd_run(args.testcases, config_path=args.config, artifacts_dir=args.artifacts_dir)

@@ -2,8 +2,16 @@ from __future__ import annotations
 
 from typing import Any
 
-from providers import PaddleOCRProvider, PyAutoGUIProvider, PywinautoProvider, VLMProvider
+from providers import PyAutoGUIProvider, PywinautoProvider, VLMProvider
 from providers.errors import ProviderDependencyError
+
+
+def _vision_ocr_enabled(config: dict[str, Any]) -> bool:
+    vision_cfg = config.get("vision") if isinstance(config.get("vision"), dict) else {}
+    if isinstance(vision_cfg, dict) and "ocr_enabled" in vision_cfg:
+        return bool(vision_cfg.get("ocr_enabled"))
+    ocr_cfg = config.get("ocr") if isinstance(config.get("ocr"), dict) else {}
+    return bool(ocr_cfg.get("enabled", True))
 
 
 def build_providers(config: dict[str, Any]) -> dict[str, Any]:
@@ -14,11 +22,14 @@ def build_providers(config: dict[str, Any]) -> dict[str, Any]:
     providers["pywinauto"] = PywinautoProvider()
 
     ocr_cfg = config.get("ocr") if isinstance(config.get("ocr"), dict) else {}
-    ocr_enabled = bool(ocr_cfg.get("enabled", True))
+    ocr_enabled = _vision_ocr_enabled(config)
     ocr_provider = str(ocr_cfg.get("provider") or "paddleocr").lower()
     if ocr_enabled and ocr_provider not in {"none", "disabled"}:
         if ocr_provider == "paddleocr":
             try:
+                # Lazy import to avoid importing/initializing OCR stack when disabled.
+                from providers.paddleocr_provider import PaddleOCRProvider
+
                 providers["ocr"] = PaddleOCRProvider(lang=str(ocr_cfg.get("language") or "ch"))
             except ProviderDependencyError:
                 # Allow running without OCR if VLM is enabled and tools can fall back.

@@ -7,15 +7,26 @@ from tools.gui.hotkey import HotkeyTool
 from tools.gui.scroll import ScrollTool
 from tools.gui.type_text import TypeTextTool
 from tools.gui.wait import WaitTool
+from tools.semantic.vlm_find_chat_candidate import VlmFindChatCandidateTool
 from tools.registry import ToolRegistry
 from tools.semantic.vlm_judge_state import VlmJudgeStateTool
 from tools.verify.text_visible import TextVisibleTool
-from tools.vision.locate_text import LocateTextTool
-from tools.vision.ocr_extract import OcrExtractTool
 from tools.vision.screenshot import ScreenshotTool
 
 
-def build_default_tool_registry() -> ToolRegistry:
+def _vision_ocr_enabled(config: dict | None) -> bool:
+    if not isinstance(config, dict):
+        return True
+    vision = config.get("vision")
+    if isinstance(vision, dict) and "ocr_enabled" in vision:
+        return bool(vision.get("ocr_enabled"))
+    ocr = config.get("ocr")
+    if isinstance(ocr, dict) and "enabled" in ocr:
+        return bool(ocr.get("enabled"))
+    return True
+
+
+def build_default_tool_registry(config: dict | None = None) -> ToolRegistry:
     reg = ToolRegistry()
     reg.register(FocusWindowTool())
     reg.register(ClickTool())
@@ -25,10 +36,17 @@ def build_default_tool_registry() -> ToolRegistry:
     reg.register(ScrollTool())
     reg.register(WaitTool())
     reg.register(ScreenshotTool())
-    reg.register(OcrExtractTool())
-    reg.register(LocateTextTool())
     reg.register(TextVisibleTool())
     reg.register(VlmJudgeStateTool())
+    reg.register(VlmFindChatCandidateTool())
+    if _vision_ocr_enabled(config):
+        # Only register OCR tools when OCR is enabled; otherwise any attempt to
+        # call them should fail fast with "tool missing" and never touch PaddleOCR.
+        from tools.vision.locate_text import LocateTextTool
+        from tools.vision.ocr_extract import OcrExtractTool
+
+        reg.register(OcrExtractTool())
+        reg.register(LocateTextTool())
     return reg
 
 

@@ -11,6 +11,10 @@ runtime:
   retry_times: 2
   side_effect_retry_times: 0
 
+vision:
+  # Master switch: when false, no OCR tools/providers should be initialized or called.
+  ocr_enabled: true
+
 ocr:
   enabled: true
   provider: paddleocr
@@ -46,16 +50,22 @@ im:
   message_input_y_ratio: 0.92
   # If your IM is configured as "Ctrl+Enter to send", set: [ctrl, enter]
   send_keys: [enter]
-  # Small delay after pasting `chat_name` into Ctrl+K search, before we proceed.
-  after_paste_chat_name_wait_seconds: 0.1
-  # Search open timing knobs (keep the key sequence unchanged).
-  search_results_wait_seconds: 0.4
-  # How to open the top result after typing in Ctrl+K search:
-  # - down_enter: press Down once to select first result, then Enter
-  # - enter: press Enter directly (matches the minimal manual flow)
-  search_select_first_result: enter
-  open_chat_enter_times: 1
-  open_chat_wait_seconds: 0.6
+  # Ctrl+K search timings.
+  after_ctrl_k_wait_seconds: 0.5
+  after_ctrl_a_wait_seconds: 0.2
+  after_paste_chat_name_wait_seconds: 1.0
+  search_results_wait_seconds: 1.0
+  after_open_chat_wait_seconds: 1.0
+  # Guard: don't click inside the Ctrl+K search input area.
+  # Smaller makes it easier to click the first result; larger is safer but may reject valid candidates.
+  search_box_region_max_y_ratio: 0.12
+  # Chat opening strategy: locate candidate on search results and click it (OCR first, VLM fallback).
+  open_chat_strategy: "ocr_vlm_click"
+  search_chat_max_retries: 2
+  ocr_candidate_min_confidence: 0.5
+  ocr_candidate_min_score: 0.6
+  use_enter_to_open_chat: false
+  use_down_enter_to_open_chat: false
   # Keep the IM flow minimal (match manual ops). Turn these on only if focus issues happen.
   close_search_overlay_after_open: false
   click_message_input_before_typing: false

@@ -68,7 +68,26 @@ class TestVLMProvider(unittest.TestCase):
             with self.assertRaises(ProviderActionError):
                 provider.judge_state(img, expectation="x")
 
+    def test_find_chat_candidate_returns_bbox_and_click_point(self) -> None:
+        content = {"success": True, "bbox": [10, 20, 30, 40], "click_point": [12, 33], "reason": "contact match"}
+        resp = _DummyResponse(200, {"choices": [{"message": {"content": json.dumps(content)}}]})
+        sess = _DummySession(resp)
+        provider = VLMProvider(base_url="https://example.com/v1", api_key="k", model="m", session=sess)
+        with tempfile.TemporaryDirectory() as td:
+            img = Path(td) / "a.png"
+            img.write_bytes(b"\x89PNG\r\n")
+            out = provider.find_chat_candidate(img, chat_name="马烨", search_box_max_y=120, timeout_seconds=7)
+            self.assertTrue(out["success"])
+            self.assertEqual(out["bbox"], [10, 20, 30, 40])
+            self.assertEqual(out["click_point"], [12, 33])
+            call = sess.calls[0]
+            self.assertIn("/chat/completions", call["url"])
+            self.assertEqual(call["json"]["model"], "m")
+            msg = call["json"]["messages"][0]["content"]
+            text_part = [p for p in msg if p.get("type") == "text"][0]
+            self.assertIn("马烨", text_part["text"])
+            self.assertIn("y <= 120", text_part["text"])
+
 
 if __name__ == "__main__":
     unittest.main()
-

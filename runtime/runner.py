@@ -37,7 +37,7 @@ class Runner:
         self._config = config
         self._artifacts_base = artifacts_base
         self._providers = providers
-        self._tool_registry = tool_registry or build_default_tool_registry()
+        self._tool_registry = tool_registry or build_default_tool_registry(self._config)
         self._skill_registry = skill_registry or build_default_skill_registry()
         self._planner = planner or RulePlanner()
         self._now = now
