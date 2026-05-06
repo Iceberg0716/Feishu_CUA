@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from tools.gui.click import ClickTool
 from tools.gui.click_window_relative import ClickWindowRelativeTool
+from tools.gui.click_cropped_screenshot_point import ClickCroppedScreenshotPointTool
 from tools.gui.focus_window import FocusWindowTool
 from tools.gui.hotkey import HotkeyTool
 from tools.gui.scroll import ScrollTool
@@ -31,6 +32,7 @@ def build_default_tool_registry(config: dict | None = None) -> ToolRegistry:
     reg.register(FocusWindowTool())
     reg.register(ClickTool())
     reg.register(ClickWindowRelativeTool())
+    reg.register(ClickCroppedScreenshotPointTool())
     reg.register(TypeTextTool())
     reg.register(HotkeyTool())
     reg.register(ScrollTool())

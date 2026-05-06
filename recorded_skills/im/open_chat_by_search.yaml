@@ -1,0 +1,107 @@
+id: recorded.im.open_chat_by_search.v1
+name: IM - Open chat by Ctrl+K search (Recorded)
+type: recorded_skill
+version: 1
+
+metadata:
+  product: im
+  intent: open_chat
+  tags:
+    - im
+    - search
+    - ctrl_k
+  status: stable
+  side_effect: false
+
+params:
+  chat_name:
+    type: string
+    required: true
+    description: Target chat name to open.
+
+preconditions:
+  - feishu_window_available
+
+postconditions:
+  - active_chat_opened
+
+steps:
+  - id: s0_focus_feishu_window
+    tool: gui.focus_window
+    params:
+      title_keywords: ["飞书", "Feishu", "Lark"]
+    wait_after: 0.2
+
+  - id: s1_ctrl_k
+    tool: gui.hotkey
+    params:
+      keys: ["ctrl", "k"]
+    wait_after: 0.3
+
+  - id: s2_select_all
+    tool: gui.hotkey
+    params:
+      keys: ["ctrl", "a"]
+    wait_after: 0.1
+
+  - id: s3_type_chat_name
+    tool: gui.type_text
+    params:
+      text: "{{chat_name}}"
+    wait_after: 0.4
+
+  - id: s4_screenshot_search_results
+    tool: screen.screenshot
+    params:
+      filename: "recorded_im_open_chat_search_results.png"
+      subdir: "recorded/screenshots"
+      title_keywords: ["飞书", "Feishu", "Lark"]
+      crop_to_window: true
+    save_as: search_shot
+    wait_after: 0.1
+
+  - id: s5_find_chat_candidate
+    tool: vlm.find_chat_candidate
+    params:
+      path: "{{search_shot.path}}"
+      chat_name: "{{chat_name}}"
+      timeout_seconds: 20
+    save_as: chat_candidate
+    wait_after: 0.1
+
+  - id: s6_click_candidate
+    tool: gui.click_cropped_screenshot_point
+    params:
+      title_keywords: ["飞书", "Feishu", "Lark"]
+      path: "{{search_shot.path}}"
+      x: "{{chat_candidate.click_point[0]}}"
+      y: "{{chat_candidate.click_point[1]}}"
+    wait_after: 0.8
+
+  - id: s6b_close_search_overlay
+    tool: gui.hotkey
+    params:
+      keys: ["esc"]
+    wait_after: 0.2
+
+  - id: s7_screenshot_after_open
+    tool: screen.screenshot
+    params:
+      filename: "recorded_im_open_chat_after.png"
+      subdir: "recorded/screenshots"
+      title_keywords: ["飞书", "Feishu", "Lark"]
+      crop_to_window: true
+    save_as: after_open_shot
+    wait_after: 0.1
+
+  - id: s8_vlm_judge_chat_opened
+    tool: vlm.judge_state
+    params:
+      path: "{{after_open_shot.path}}"
+      expectation: "Decide whether the screenshot shows the IM chat conversation view (not the Ctrl+K overlay/search panel) and the current chat header/title matches '{{chat_name}}'. Return strict JSON."
+      timeout_seconds: 20
+    wait_after: 0.1
+
+verification:
+  - type: note
+    text: "This recorded macro only opens the chat; message sending is handled by a separate macro."

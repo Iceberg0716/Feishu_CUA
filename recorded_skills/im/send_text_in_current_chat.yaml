@@ -1,0 +1,68 @@
+id: recorded.im.send_text_in_current_chat.v1
+name: IM - Send text in current chat (Recorded)
+type: recorded_skill
+version: 1
+
+metadata:
+  product: im
+  intent: send_text
+  tags:
+    - im
+    - send
+    - input
+  status: stable
+  side_effect: true
+
+params:
+  message:
+    type: string
+    required: true
+    description: Message text to send.
+
+preconditions:
+  - active_chat_opened
+
+postconditions:
+  - message_sent
+
+steps:
+  - id: s0_focus_feishu_window
+    tool: gui.focus_window
+    params:
+      title_keywords: ["飞书", "Feishu", "Lark"]
+    wait_after: 0.2
+
+  - id: s1_type_message
+    tool: gui.type_text
+    params:
+      text: "{{message}}"
+    wait_after: 0.1
+
+  - id: s2_press_enter
+    tool: gui.hotkey
+    params:
+      keys: ["enter"]
+    wait_after: 0.4
+
+  - id: s3_screenshot_after_send
+    tool: screen.screenshot
+    params:
+      filename: "recorded_im_send_text_after.png"
+      subdir: "recorded/screenshots"
+      title_keywords: ["飞书", "Feishu", "Lark"]
+      crop_to_window: true
+    save_as: after_shot
+    wait_after: 0.1
+
+  - id: s4_vlm_judge_sent
+    tool: vlm.judge_state
+    params:
+      path: "{{after_shot.path}}"
+      expectation: "Decide whether the screenshot shows that a message with EXACT text '{{message}}' has already been SENT in the current chat (as a chat bubble in the message list). Do NOT treat the input box draft as sent. If you cannot clearly see the exact text as a sent bubble, return success=false. Return strict JSON."
+      timeout_seconds: 20
+    wait_after: 0.1
+
+verification:
+  - type: tool
+    tool: vlm.judge_state
+    note: "In v1, verification is represented as a tool step in `steps` for uniform execution."

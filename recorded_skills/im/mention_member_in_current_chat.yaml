@@ -1,0 +1,79 @@
+id: recorded.im.mention_member_in_current_chat.v1
+name: IM - Mention member in current chat (Recorded)
+type: recorded_skill
+version: 1
+
+metadata:
+  product: im
+  intent: mention_member
+  tags:
+    - im
+    - mention
+    - group
+  status: experimental
+  side_effect: true
+
+params:
+  member_name:
+    type: string
+    required: true
+  message:
+    type: string
+    required: true
+
+preconditions:
+  - active_chat_opened
+
+postconditions:
+  - mention_message_sent
+
+steps:
+  - id: s1_click_message_input
+    tool: gui.click_window_relative
+    params:
+      title_keywords: ["飞书", "Feishu", "Lark"]
+      x_ratio: 0.5
+      y_ratio: 0.92
+    wait_after: 0.2
+
+  - id: s2_type_mention
+    tool: gui.type_text
+    params:
+      text: "@{{member_name}}"
+    wait_after: 0.8
+
+  - id: s3_confirm_mention_candidate
+    tool: gui.hotkey
+    params:
+      keys: ["enter"]
+    wait_after: 0.3
+
+  - id: s4_type_message
+    tool: gui.type_text
+    params:
+      text: " {{message}}"
+    wait_after: 0.2
+
+  - id: s5_send_message
+    tool: gui.hotkey
+    params:
+      keys: ["enter"]
+    wait_after: 0.6
+
+  - id: s6_screenshot_after_send
+    tool: screen.screenshot
+    params:
+      filename: "recorded_im_mention_after.png"
+      subdir: "recorded/screenshots"
+      title_keywords: ["飞书", "Feishu", "Lark"]
+      crop_to_window: true
+    save_as: after_shot
+    wait_after: 0.1
+
+  - id: s7_vlm_judge_mention_sent
+    tool: vlm.judge_state
+    params:
+      path: "{{after_shot.path}}"
+      expectation: "Decide whether the screenshot shows a message already sent in the current chat that mentions '@{{member_name}}' and contains '{{message}}'. Do NOT treat the input box draft as sent. Return strict JSON."
+      timeout_seconds: 20
+    wait_after: 0.1

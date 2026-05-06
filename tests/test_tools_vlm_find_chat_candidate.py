@@ -29,7 +29,8 @@ class _DummyVlmProvider:
                 "timeout_seconds": timeout_seconds,
             }
         )
-        return {"success": True, "bbox": [1, 2, 3, 4], "click_point": [5, 6], "reason": "ok", "evidence": ["vlm:ok"]}
+        # click_point must be below search_box_max_y guard rails in tool wrapper
+        return {"success": True, "bbox": [1, 2, 3, 4], "click_point": [5, 456], "reason": "ok", "evidence": ["vlm:ok"]}
 
 
 class TestVlmFindChatCandidateTool(unittest.TestCase):
@@ -44,10 +45,9 @@ class TestVlmFindChatCandidateTool(unittest.TestCase):
             res = reg.get("vlm.find_chat_candidate").execute({"path": str(img), "chat_name": "马烨", "search_box_max_y": 123}, ctx)
             self.assertTrue(res.success)
             self.assertEqual(res.data["bbox"], [1, 2, 3, 4])
-            self.assertEqual(res.data["click_point"], [5, 6])
+            self.assertEqual(res.data["click_point"], [5, 456])
             self.assertIn("vlm:ok", res.evidence)
 
 
 if __name__ == "__main__":
     unittest.main()
-

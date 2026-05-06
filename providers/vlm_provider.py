@@ -137,7 +137,8 @@ class VLMProvider:
             "You are a Feishu/Lark desktop GUI automation assistant.\n"
             "The screenshot is the Ctrl+K search results page.\n"
             f"Goal: open the IM chat conversation named '{chat_name}'.\n"
-            "Find the most appropriate chat/contact/conversation result to click.\n"
+            "Find the most appropriate chat/contact/conversation RESULT ROW to click.\n"
+            "Do NOT click UI chrome: filter chips (e.g. '群组', '排序', '群组类型', '会话成员'), the search box, close/clear buttons, or blank areas.\n"
             "Do NOT choose message results, documents, calendar, email, or the search box text.\n"
             + sb
             + "Return ONLY strict JSON:\n"

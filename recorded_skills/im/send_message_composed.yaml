@@ -1,0 +1,42 @@
+id: recorded.im.send_message_composed.v1
+name: IM - Send message (Composed Recorded)
+type: recorded_skill
+version: 1
+
+metadata:
+  product: im
+  intent: send_message
+  tags:
+    - im
+    - composed
+  status: experimental
+  side_effect: true
+
+params:
+  chat_name:
+    type: string
+    required: true
+  message:
+    type: string
+    required: true
+
+preconditions:
+  - feishu_window_available
+
+postconditions:
+  - message_sent
+
+steps: []
+
+composed_of:
+  - skill: recorded.im.open_chat_by_search.v1
+    params:
+      chat_name: "{{chat_name}}"
+  - skill: recorded.im.send_text_in_current_chat.v1
+    params:
+      message: "{{message}}"
+
+verification:
+  - type: note
+    text: "Composed macro; does not replace the existing Python skill `im.send_message`."
+
