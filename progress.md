@@ -66,6 +66,9 @@
 - Chore: ignore local `.claude/` settings from git: `.gitignore`.
 - Ran: `python -m compileall -q .`
 - Ran: `python -m unittest discover -s tests -p "test*.py" -q`
+- Ran: `git switch -c share/im-enter-only-flow`
+- Ran: `git commit -m "Initial commit: CUA MVP skeleton + IM enter-only flow"`
+- Ran: `git push -u origin share/im-enter-only-flow`
 
 ### 2026-05-02
 
