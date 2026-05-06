@@ -1,0 +1,31 @@
+# LarkCUA-TestAgent Report
+
+## Summary
+
+| Metric | Value |
+|---|---|
+| Total Cases | {{ summary.total }} |
+| Passed | {{ summary.passed }} |
+| Failed | {{ summary.failed }} |
+| Run ID | {{ run.run_id }} |
+| Started | {{ run.started_at }} |
+| Ended | {{ run.ended_at }} |
+
+{% for case in run.cases %}
+## Case: {{ case.case_id }}
+
+- Goal: {{ case.goal }}
+- Status: {{ "Passed" if case.success else "Failed" }}
+{% if case.error %}- Error: {{ case.error }}{% endif %}
+
+### Steps
+{% for step in case.steps %}
+- {{ step.step_id }} `{{ step.name }}`: {{ "OK" if step.success else "FAIL" }}{% if step.error %} ({{ step.error }}){% endif %}
+{% endfor %}
+
+### Evidence
+{% for ev in case.evidence %}
+- {{ ev }}
+{% endfor %}
+
+{% endfor %}

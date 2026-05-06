@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LarkCUA-TestAgent Report</title>
+    <style>
+      body { font-family: system-ui, -apple-system, Segoe UI, Arial, sans-serif; margin: 24px; }
+      table { border-collapse: collapse; margin: 12px 0; }
+      th, td { border: 1px solid #ddd; padding: 8px 10px; }
+      th { background: #f6f6f6; text-align: left; }
+      .ok { color: #1a7f37; font-weight: 600; }
+      .fail { color: #cf222e; font-weight: 600; }
+      code { background: #f6f8fa; padding: 2px 4px; border-radius: 4px; }
+    </style>
+  </head>
+  <body>
+    <h1>LarkCUA-TestAgent Report</h1>
+
+    <h2>Summary</h2>
+    <table>
+      <tr><th>Metric</th><th>Value</th></tr>
+      <tr><td>Total Cases</td><td>{{ summary.total }}</td></tr>
+      <tr><td>Passed</td><td>{{ summary.passed }}</td></tr>
+      <tr><td>Failed</td><td>{{ summary.failed }}</td></tr>
+      <tr><td>Run ID</td><td>{{ run.run_id }}</td></tr>
+      <tr><td>Started</td><td>{{ run.started_at }}</td></tr>
+      <tr><td>Ended</td><td>{{ run.ended_at }}</td></tr>
+    </table>
+
+    {% for case in run.cases %}
+      <h2>Case: {{ case.case_id }}</h2>
+      <p><b>Goal:</b> {{ case.goal }}</p>
+      <p><b>Status:</b>
+        {% if case.success %}<span class="ok">Passed</span>{% else %}<span class="fail">Failed</span>{% endif %}
+      </p>
+      {% if case.error %}<p><b>Error:</b> {{ case.error }}</p>{% endif %}
+
+      <h3>Steps</h3>
+      <ul>
+        {% for step in case.steps %}
+          <li>
+            <code>{{ step.step_id }}</code> <code>{{ step.name }}</code>:
+            {% if step.success %}<span class="ok">OK</span>{% else %}<span class="fail">FAIL</span>{% endif %}
+            {% if step.error %} ({{ step.error }}){% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+
+      <h3>Evidence</h3>
+      <ul>
+        {% for ev in case.evidence %}
+          <li>{{ ev }}</li>
+        {% endfor %}
+      </ul>
+    {% endfor %}
+  </body>
+</html>
+

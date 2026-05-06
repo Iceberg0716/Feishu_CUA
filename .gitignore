@@ -1,0 +1,10 @@
+__pycache__/
+.env
+*.pyc
+.claude/
+.venv/
+.mypy_cache/
+.pytest_cache/
+artifacts/runs/
+artifacts/screenshots/
+config.yaml

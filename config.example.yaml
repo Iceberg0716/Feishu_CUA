@@ -1,0 +1,61 @@
+app:
+  feishu_window_title_keywords:
+    - 飞书
+    - Feishu
+    - Lark
+
+runtime:
+  screenshot_dir: artifacts/screenshots
+  run_dir: artifacts/runs
+  default_timeout_seconds: 30
+  retry_times: 2
+  side_effect_retry_times: 0
+
+ocr:
+  enabled: true
+  provider: paddleocr
+  language: ch
+
+vlm:
+  enabled: false
+  provider: openai_compatible
+  model: ${VLM_MODEL}
+  api_key: ${DASHSCOPE_API_KEY}
+  base_url: ${VLM_BASE_URL}
+
+feishu:
+  mcp_enabled: false
+  openapi_enabled: false
+  app_id: ${FEISHU_APP_ID}
+  app_secret: ${FEISHU_APP_SECRET}
+  tenant_access_token: ${FEISHU_TENANT_ACCESS_TOKEN}
+
+planner:
+  mode: rule
+  llm_enabled: false
+  llm_api_key: ${PLANNER_LLM_API_KEY}
+
+docs:
+  home_entry_keyword: 云文档
+  new_doc_hotkey: [ctrl, n]
+
+im:
+  # Click inside the Feishu window to focus the message input box before typing.
+  # Ratios are relative to the focused Feishu window rect: (left, top) -> (right, bottom).
+  message_input_x_ratio: 0.65
+  message_input_y_ratio: 0.92
+  # If your IM is configured as "Ctrl+Enter to send", set: [ctrl, enter]
+  send_keys: [enter]
+  # Small delay after pasting `chat_name` into Ctrl+K search, before we proceed.
+  after_paste_chat_name_wait_seconds: 0.1
+  # Search open timing knobs (keep the key sequence unchanged).
+  search_results_wait_seconds: 0.4
+  # How to open the top result after typing in Ctrl+K search:
+  # - down_enter: press Down once to select first result, then Enter
+  # - enter: press Enter directly (matches the minimal manual flow)
+  search_select_first_result: enter
+  open_chat_enter_times: 1
+  open_chat_wait_seconds: 0.6
+  # Keep the IM flow minimal (match manual ops). Turn these on only if focus issues happen.
+  close_search_overlay_after_open: false
+  click_message_input_before_typing: false

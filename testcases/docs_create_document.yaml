@@ -1,0 +1,22 @@
+id: docs_create_document_001
+name: 创建项目周报文档
+product: docs
+instruction: 在飞书中创建一个名为“项目周报”的新文档，并输入标题“2026年Q2项目进展”。
+
+params:
+  doc_name: 项目周报
+  title: 2026年Q2项目进展
+  body: 本文档由 LarkCUA-TestAgent 自动创建。
+
+expected:
+  type: document_content_visible
+  text:
+    - 项目周报
+    - 2026年Q2项目进展
+
+verification:
+  - ocr
+  - screenshot
+  - vlm
+  - feishu_api
+

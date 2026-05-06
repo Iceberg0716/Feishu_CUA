@@ -1,0 +1,18 @@
+id: im_send_message_001
+name: IM 发送文本消息
+product: im
+instruction: 在 IM 中搜索“马烨”，点击"马烨"打开会话,发送一条消息“Hello World from CUA Agent”，并确认发送成功。
+
+params:
+  chat_name: 马烨
+  message: Hello World from CUA Agent
+
+expected:
+  type: message_visible
+  text: Hello World from CUA Agent
+
+verification:
+  - ocr
+  - screenshot
+  - vlm
+
