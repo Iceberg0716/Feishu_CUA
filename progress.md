@@ -4,7 +4,7 @@ Last updated: 2026-05-06
 
 ## Change Log
 - 2026-05-06: Make OCR optional via `vision.ocr_enabled`; when disabled, OCR tools/providers are not initialized/called and `im.search_chat` runs VLM-only; `doctor` prints OCR import failures as WARN and skips checks when OCR is disabled.
-- 2026-05-06: Tune VLM-only Ctrl+K click guard by introducing `im.search_box_region_max_y_ratio` and pass it into `vlm.find_chat_candidate` as `search_box_max_y` to avoid false failures on top results.
+- 2026-05-06: Tune VLM-only Ctrl+K click guard by introducing `im.search_box_region_max_y_ratio` and pass it into `vlm.find_chat_candidate` as `search_box_max_y` to avoid false failures on top results. Commands: `python -m compileall .`, `git diff --check`.
 
 用于新会话快速了解“当前做到哪一步”。详细历史以 `git log` 为准（不再在此文件里堆叠长日志）。更新规范见 `AGENTS.md` 的 Progress Hook。
 
